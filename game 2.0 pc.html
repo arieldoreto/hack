@@ -14,7 +14,7 @@ body{background:black;color:#00ff00;font-family:monospace;margin:0;text-align:ce
 .header{padding:6px;border-bottom:1px solid #003300;}
 .panel{padding:8px;border-bottom:1px solid #003300;}
 .console{height:30vh;overflow:auto;text-align:left;padding:10px;border:2px solid #00ff00;margin:10px;cursor:pointer;}
-.console:hover{background:#001100;}
+/* Removido o efeito hover que deixava o console mais claro */
 .serverBtn{width:100%;background:black;color:#00ff00;border:1px solid #003300;padding:6px;margin-bottom:4px;cursor:pointer;}
 .serverBtn:hover{background:#002200;}
 button{background:black;color:#00ff00;border:1px solid #00ff00;padding:6px;margin:3px;cursor:pointer;}
@@ -828,12 +828,12 @@ updateSignal();
 update();
 setupHoldButtons();
 
-// Clique no console para minerar (sem mudar a cor de fundo)
+// Clique no console para minerar (sem qualquer feedback visual)
 document.getElementById('consoleFarm').addEventListener('click', function(e) {
     let selection = window.getSelection().toString();
     if(selection.length === 0) mineData();
 });
-// Removidos os event listeners que alteravam a cor de fundo ao pressionar
+// Não há mais event listeners que alterem a cor
 </script>
 </body>
 </html>
