@@ -79,7 +79,7 @@ button:hover{background:#003300;}
 <button onclick="prestigeNetwork()">PRESTIGE NETWORK ($1000000)</button>
 </div>
 <div id="consoleOps" class="console"></div>
-<!-- Botões de save movidos para dentro da Dark Ops -->
+<!-- Botões de save dentro da Dark Ops -->
 <div class="save-panel">
     <button class="no-dim" onclick="saveGame()">💾 SAVE GAME</button>
     <button class="no-dim" onclick="loadGame()">📂 LOAD SAVE</button>
@@ -220,7 +220,6 @@ function updateSignal(){
     let totalPercent = basePercent + signalBonus;
     if(totalPercent > 99) totalPercent = 99;
     
-    // Agora mostramos apenas o total (Network Signal)
     const levels = ["▁", "▂", "▃", "▄", "▅"];
     let signalStr = "";
     for(let i = 0; i < 5; i++) {
@@ -736,7 +735,7 @@ document.getElementById('importFile').addEventListener('change', function(e) {
     e.target.value = '';
 });
 
-// ==================== HOLD BUTTONS ====================
+// ==================== HOLD BUTTONS (com suporte a toque) ====================
 function startHold(buttonId, upgradeFunction) {
     if(holdIntervals[buttonId]) return;
     let success = upgradeFunction();
@@ -766,16 +765,39 @@ function setupHoldButtons() {
         { id: 'botNetBtn', func: upgradeBotSpeed },
         { id: 'autoReconnectBtn', func: buyAutoReconnect }
     ];
+
     upgradeButtons.forEach(item => {
         let btn = document.getElementById(item.id);
-        if(!btn) return;
-        btn.addEventListener('mousedown', (e) => {
-            e.preventDefault();
+        if (!btn) return;
+
+        // Iniciar hold
+        const start = (e) => {
+            e.preventDefault(); // Evita zoom/seleção
             startHold(item.id, item.func);
+        };
+
+        // Parar hold
+        const stop = () => stopHold(item.id);
+
+        // Eventos de mouse (desktop)
+        btn.addEventListener('mousedown', start);
+        btn.addEventListener('mouseup', stop);
+        btn.addEventListener('mouseleave', stop);
+        btn.addEventListener('mouseout', stop);
+
+        // Eventos de toque (mobile)
+        btn.addEventListener('touchstart', start, { passive: false });
+        btn.addEventListener('touchend', stop);
+        btn.addEventListener('touchcancel', stop);
+        // Para quando o dedo sai do botão
+        btn.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            const rect = btn.getBoundingClientRect();
+            if (touch.clientX < rect.left || touch.clientX > rect.right ||
+                touch.clientY < rect.top || touch.clientY > rect.bottom) {
+                stopHold(item.id);
+            }
         });
-        btn.addEventListener('mouseup', () => stopHold(item.id));
-        btn.addEventListener('mouseleave', () => stopHold(item.id));
-        btn.addEventListener('mouseout', () => stopHold(item.id));
     });
 }
 
