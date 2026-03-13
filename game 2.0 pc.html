@@ -29,6 +29,8 @@ button:hover{background:#003300;}
 .notification{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:black;border:3px solid #00ff00;color:#00ff00;padding:30px;font-size:24px;font-weight:bold;text-align:center;z-index:1000;box-shadow:0 0 20px #00ff00;animation:fadeInOut 2s ease-in-out;}
 @keyframes fadeInOut{0%{opacity:0;transform:translate(-50%,-50%) scale(0.8);}50%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-50%) scale(0.8);}}
 .info-line{margin:2px 0; clear:both;}
+.mine-center{text-align:center; margin:10px 0;}
+.mine-center button{font-size:1.2em; padding:10px 20px;}
 </style>
 </head>
 <body>
@@ -43,7 +45,6 @@ button:hover{background:#003300;}
 <!-- DATA FARM -->
 <div id="farm" class="box active">
 <div class="panel">
-<button onclick="mineData()">Mine DATA</button>
 <button id="minerBtn" onclick="upgradeMiner()">Upgrade Miner Data Rate (<span id="minerCost">100</span>)</button>
 <button id="autoBtn" onclick="buyAutoMiner()">Auto Miner (<span id="autoCost">500</span>)</button>
 <button id="autoSpeedBtn" onclick="upgradeAutoMinerSpeed()">Upgrade Auto Miner Speed ($<span id="autoSpeedCost">300</span>)</button>
@@ -56,6 +57,10 @@ button:hover{background:#003300;}
 <br><br>
 <div class="info-line">Connection Lv <span id="connLv">1%</span> | Network Signal <span id="signal"></span></div>
 <div class="info-line">Firewall Securitynet <span id="firewallBar">▱▱▱▱▱▱▱▱▱▱</span> <span id="firewallLvBar">0</span>/99</div>
+</div>
+<!-- Botão Mine Data centralizado -->
+<div class="mine-center">
+    <button onclick="mineData()">Mine Data or Tap to Mine</button>
 </div>
 <div id="consoleFarm" class="console"></div>
 </div>
@@ -119,6 +124,9 @@ let disconnectTimeout = null;
 
 const firewallNames = ["Basic", "Standard", "Enhanced", "Advanced", "Elite", "Ultimate", "Godlike", "Omnipotent"];
 const FIREWALL_MAX_LEVEL = 99;
+
+// Mapa para armazenar os intervals de cada botão (hold)
+const holdIntervals = {};
 
 function showNotification(message){
     let notification = document.createElement("div");
@@ -194,15 +202,31 @@ function mineData(){
     updateButtons();
 }
 
+// Funções de upgrade modificadas para retornar boolean
 function upgradeMiner(){
-    if(data>=minerCost){data-=minerCost;minerLevel++;speed+=500;minerCost=Math.floor(minerCost*1.8);
-        document.getElementById("minerCost").innerText=formatNumber(minerCost);update();updateButtons();}
+    if(data>=minerCost){
+        data-=minerCost;
+        minerLevel++;
+        speed+=500;
+        minerCost=Math.floor(minerCost*1.8);
+        document.getElementById("minerCost").innerText=formatNumber(minerCost);
+        update();
+        updateButtons();
+        return true;
+    }
+    return false;
 }
 
 function buyAutoMiner(){
-    if(data>=autoCost){data-=autoCost;autoMiner++;autoCost=Math.floor(autoCost*3);
+    if(data>=autoCost){
+        data-=autoCost;
+        autoMiner++;
+        autoCost=Math.floor(autoCost*3);
         updateAutoMinerButtonText();
-        updateButtons();}
+        updateButtons();
+        return true;
+    }
+    return false;
 }
 
 function upgradeAutoMinerSpeed() {
@@ -215,7 +239,95 @@ function upgradeAutoMinerSpeed() {
         log("consoleFarm", "AUTO MINER SPEED UPGRADED TO " + autoMinerSpeed.toFixed(1) + "x (Next: $" + formatNumber(autoSpeedCost) + ")");
         update();
         updateButtons();
+        return true;
     }
+    return false;
+}
+
+function upgradeConnection(){
+    if(connectionLevel>=maxConnectionLevel) return false;
+    if(data>=connCost){
+        data-=connCost;
+        connectionLevel++;
+        connCost=Math.floor(connCost*1.6);
+        document.getElementById("connCost").innerText=formatNumber(connCost);
+        updateSignal();
+        update();
+        updateButtons();
+        scheduleDisconnectCheck();
+        return true;
+    }
+    return false;
+}
+
+function upgradeFirewall(){
+    if(usd>=firewallCost){
+        usd-=firewallCost;
+        firewallLevel++;
+        firewallCost=Math.floor(firewallCost*2);
+        document.getElementById("firewallLv").innerText=firewallLevel;
+        document.getElementById("firewallCost").innerText=formatNumber(firewallCost);
+        
+        let nameIndex = Math.min(firewallLevel, firewallNames.length-1);
+        document.getElementById("firewallName").innerText = firewallNames[nameIndex];
+        
+        updateFirewallBar();
+        updateButtons();
+        log("consoleFarm", "FIREWALL UPGRADED TO " + firewallNames[nameIndex] + " LEVEL " + firewallLevel);
+        
+        scheduleDisconnectCheck();
+        return true;
+    }
+    return false;
+}
+
+function upgradeCheckInterval() {
+    if (usd >= intervalCost) {
+        usd -= intervalCost;
+        checkIntervalBonus += 1;
+        intervalCost = Math.floor(intervalCost * 2.5);
+        document.getElementById("intervalCost").innerText = formatNumber(intervalCost);
+        log("consoleFarm", "CHECK INTERVAL UPGRADED TO +" + checkIntervalBonus + "s (Next: $" + formatNumber(intervalCost) + ")");
+        update();
+        updateButtons();
+        scheduleDisconnectCheck();
+        return true;
+    }
+    return false;
+}
+
+function buyHacker(){
+    if(usd>=hackerCost){
+        usd-=hackerCost;
+        hackers++;
+        update();
+        updateButtons();
+        return true;
+    }
+    return false;
+}
+
+function upgradeBotSpeed(){
+    if(usd>=botCost){
+        usd-=botCost;
+        botSpeed++;
+        update();
+        updateButtons();
+        return true;
+    }
+    return false;
+}
+
+function buyAutoReconnect(){
+    if(usd>=50000){
+        usd-=50000;
+        autoReconnect=true;
+        log("consoleFarm","AUTO RECONNECT ENABLED");
+        update();
+        updateButtons();
+        return true;
+    }
+    return false;
 }
 
 setInterval(()=>{
@@ -236,17 +348,6 @@ function connectServer(){
     updateSignal(); 
     updateButtons();
     scheduleDisconnectCheck();
-}
-
-function upgradeConnection(){
-    if(connectionLevel>=maxConnectionLevel) return;
-    if(data>=connCost){data-=connCost;connectionLevel++; connCost=Math.floor(connCost*1.6);
-        document.getElementById("connCost").innerText=formatNumber(connCost); 
-        updateSignal(); 
-        update(); 
-        updateButtons();
-        scheduleDisconnectCheck();
-    }
 }
 
 function updateSignal(){
@@ -280,40 +381,6 @@ function updateFirewallBar() {
     }
     document.getElementById("firewallBar").innerText = barStr;
     document.getElementById("firewallLvBar").innerText = firewallLevel;
-}
-
-function buyAutoReconnect(){if(usd>=50000){usd-=50000;autoReconnect=true; log("consoleFarm","AUTO RECONNECT ENABLED"); update(); updateButtons();}}
-
-function upgradeFirewall(){
-    if(usd>=firewallCost){
-        usd-=firewallCost;
-        firewallLevel++;
-        firewallCost=Math.floor(firewallCost*2);
-        document.getElementById("firewallLv").innerText=firewallLevel;
-        document.getElementById("firewallCost").innerText=formatNumber(firewallCost);
-        
-        let nameIndex = Math.min(firewallLevel, firewallNames.length-1);
-        document.getElementById("firewallName").innerText = firewallNames[nameIndex];
-        
-        updateFirewallBar();
-        updateButtons();
-        log("consoleFarm", "FIREWALL UPGRADED TO " + firewallNames[nameIndex] + " LEVEL " + firewallLevel);
-        
-        scheduleDisconnectCheck();
-    }
-}
-
-function upgradeCheckInterval() {
-    if (usd >= intervalCost) {
-        usd -= intervalCost;
-        checkIntervalBonus += 1;
-        intervalCost = Math.floor(intervalCost * 2.5);
-        document.getElementById("intervalCost").innerText = formatNumber(intervalCost);
-        log("consoleFarm", "CHECK INTERVAL UPGRADED TO +" + checkIntervalBonus + "s (Next: $" + formatNumber(intervalCost) + ")");
-        update();
-        updateButtons();
-        scheduleDisconnectCheck();
-    }
 }
 
 function getDisconnectInterval() {
@@ -463,7 +530,6 @@ function hackServer(name,diff){
 }
 
 function loadServers(){
-    // Lista expandida com dificuldades ajustadas
     const servers = [
         { name: "USA", diff: 80 },
         { name: "CHINA", diff: 75 },
@@ -480,7 +546,7 @@ function loadServers(){
     ];
     
     let div = document.getElementById("servers");
-    div.innerHTML = ''; // Limpa antes de recriar
+    div.innerHTML = '';
     servers.forEach(s => {
         let btn = document.createElement("button");
         btn.className = "serverBtn";
@@ -490,8 +556,6 @@ function loadServers(){
     });
 }
 
-function buyHacker(){if(usd>=hackerCost){usd-=hackerCost;hackers++; update(); updateButtons();}}
-function upgradeBotSpeed(){if(usd>=botCost){usd-=botCost;botSpeed++; update(); updateButtons();}}
 function prestigeNetwork(){
     if(usd>=1000000){
         usd-=1000000;
@@ -526,8 +590,31 @@ function prestigeNetwork(){
     }
 }
 
-function upgradeDownload(){if(usd>=downCost){usd-=downCost;download++;downCost=Math.floor(downCost*2.5);document.getElementById("downCost").innerText=formatNumber(downCost);update();updateButtons();}}
-function upgradeSoftware(){if(usd>=softCost){usd-=softCost;software++;softCost=Math.floor(softCost*2.5);document.getElementById("softCost").innerText=formatNumber(softCost);update();updateButtons();}}
+function upgradeDownload(){
+    if(usd>=downCost){
+        usd-=downCost;
+        download++;
+        downCost=Math.floor(downCost*2.5);
+        document.getElementById("downCost").innerText=formatNumber(downCost);
+        update();
+        updateButtons();
+        return true;
+    }
+    return false;
+}
+
+function upgradeSoftware(){
+    if(usd>=softCost){
+        usd-=softCost;
+        software++;
+        softCost=Math.floor(softCost*2.5);
+        document.getElementById("softCost").innerText=formatNumber(softCost);
+        update();
+        updateButtons();
+        return true;
+    }
+    return false;
+}
 
 function log(id,text){
     let box=document.getElementById(id); let line=document.createElement("div");
@@ -560,13 +647,13 @@ function codeLine(){
     return codes[Math.floor(Math.random() * codes.length)];
 }
 
+// Função formatNumber: inteiro até 1M, depois abrevia com M, B, T, P (sem decimais)
 function formatNumber(n){
-    if(n>=1e15)return (n/1e15).toFixed(2)+"P";
-    if(n>=1e12)return (n/1e12).toFixed(2)+"T";
-    if(n>=1e9)return (n/1e9).toFixed(2)+"B";
-    if(n>=1e6)return (n/1e6).toFixed(2)+"M";
-    if(n>=1e3)return (n/1e3).toFixed(2)+"K";
-    return Math.floor(n);
+    if(n >= 1e15) return Math.floor(n / 1e15) + "P";
+    if(n >= 1e12) return Math.floor(n / 1e12) + "T";
+    if(n >= 1e9) return Math.floor(n / 1e9) + "B";
+    if(n >= 1e6) return Math.floor(n / 1e6) + "M";
+    return Math.floor(n).toString(); // inteiro sem abreviação
 }
 
 function updateAutoMinerButtonText() {
@@ -580,7 +667,7 @@ function updateAutoMinerButtonText() {
 
 function update(){
     document.getElementById("dataVal").innerText=formatNumber(data);
-    document.getElementById("usdVal").innerText=usd.toFixed(2);
+    document.getElementById("usdVal").innerText=formatNumber(usd); // agora usa formatNumber
     
     let extractionRate = speed * prestigeBonus;
     let autoMinerRate = autoMiner > 0 ? autoMiner * autoMinerPower * autoMinerSpeed * prestigeBonus * (1000/1200) : 0;
@@ -671,6 +758,71 @@ function loadGame(){
         showNotification("NENHUM SAVE ENCONTRADO!");
     }
 }
+
+// Função auxiliar para iniciar o hold em um botão
+function startHold(buttonId, upgradeFunction) {
+    if (holdIntervals[buttonId]) return; // já está em hold
+    
+    // Executa uma vez imediatamente
+    let success = upgradeFunction();
+    if (!success) return; // se não conseguir, não inicia o intervalo
+    
+    // Inicia o intervalo
+    holdIntervals[buttonId] = setInterval(() => {
+        let ok = upgradeFunction();
+        if (!ok) {
+            // Se não conseguir mais, para o intervalo
+            stopHold(buttonId);
+        }
+    }, 100); // a cada 100ms
+}
+
+function stopHold(buttonId) {
+    if (holdIntervals[buttonId]) {
+        clearInterval(holdIntervals[buttonId]);
+        delete holdIntervals[buttonId];
+    }
+}
+
+// Adiciona eventos de hold a todos os botões de upgrade
+function setupHoldButtons() {
+    const upgradeButtons = [
+        { id: 'minerBtn', func: upgradeMiner },
+        { id: 'autoBtn', func: buyAutoMiner },
+        { id: 'autoSpeedBtn', func: upgradeAutoMinerSpeed },
+        { id: 'connUpgradeBtn', func: upgradeConnection },
+        { id: 'firewallBtn', func: upgradeFirewall },
+        { id: 'intervalBtn', func: upgradeCheckInterval },
+        { id: 'buyHackerBtn', func: buyHacker },
+        { id: 'botNetBtn', func: upgradeBotSpeed },
+        { id: 'autoReconnectBtn', func: buyAutoReconnect }
+    ];
+    
+    upgradeButtons.forEach(item => {
+        let btn = document.getElementById(item.id);
+        if (!btn) return;
+        
+        // Mousedown - inicia o hold
+        btn.addEventListener('mousedown', (e) => {
+            e.preventDefault(); // evita seleção de texto
+            startHold(item.id, item.func);
+        });
+        
+        // Mouseup e mouseleave - param o hold
+        btn.addEventListener('mouseup', () => stopHold(item.id));
+        btn.addEventListener('mouseleave', () => stopHold(item.id));
+        
+        // Também para quando o mouse sai do botão enquanto pressionado
+        btn.addEventListener('mouseout', () => stopHold(item.id));
+    });
+    
+    // Para o botão de mineração, não queremos hold, então não adicionamos
+}
+
+// Chama a função após o carregamento
+window.addEventListener('load', () => {
+    setupHoldButtons();
+});
 
 setInterval(updatePing,1500);
 
