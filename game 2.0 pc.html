@@ -56,7 +56,6 @@ button:hover{background:#003300;}
 <div class="info-line">Connection Lv <span id="connLv">1%</span> | Network Signal <span id="signal"></span></div>
 <div class="info-line">Firewall Securitynet <span id="firewallBar">▱▱▱▱▱▱▱▱▱▱</span> <span id="firewallLvBar">0</span>/99</div>
 </div>
-<!-- Console movido para cima (sem o botão) -->
 <div id="consoleFarm" class="console"></div>
 </div>
 
@@ -90,15 +89,15 @@ Extraction Rate <span id="extractionRate">0</span>/s | Auto Miner Rate <span id=
 PING <span id="ping">---</span> ms | LATENCY <span id="latency">OFFLINE</span>
 
 <div class="save-panel">
-    <button onclick="saveGame()">SAVE GAME</button>
-    <button onclick="loadGame()">LOAD SAVE</button>
+    <button onclick="saveGame()">💾 SAVE GAME</button>
+    <button onclick="loadGame()">📂 LOAD SAVE</button>
+    <button onclick="exportSave()">📥 EXPORT SAVE</button>
+    <button onclick="document.getElementById('importFile').click()">📤 IMPORT SAVE</button>
+    <input type="file" id="importFile" accept=".json" style="display:none;">
 </div>
 
 <script>
-// CÓDIGO JAVASCRIPT IDÊNTICO AO ANTERIOR, MANTIDO PARA REFERÊNCIA
-// (O conteúdo do script permanece inalterado em relação à última versão fornecida)
-// Por brevidade, mantemos o script completo, mas aqui está o resumo: todas as funções e lógicas são as mesmas.
-
+// ==================== ESTADO DO JOGO ====================
 let data=0, usd=0, speed=1000;
 let minerLevel=1, minerCost=100;
 let autoMiner=0, autoCost=500;
@@ -126,6 +125,7 @@ const FIREWALL_MAX_LEVEL = 99;
 
 const holdIntervals = {};
 
+// ==================== FUNÇÕES AUXILIARES ====================
 function showNotification(message){
     let notification = document.createElement("div");
     notification.className = "notification";
@@ -134,486 +134,27 @@ function showNotification(message){
     setTimeout(() => notification.remove(), 2000);
 }
 
-function updateButtons(){
-    let buttons=document.querySelectorAll("button");
-    buttons.forEach(b=>{
-        b.classList.remove("highlight", "dim");
-        
-        if(!connected){
-            if(b.id==="connectBtn"){
-                b.classList.remove("dim");
-                b.classList.add("highlight");
-            }
-            else if(b.getAttribute("onclick") === "saveGame()" || b.getAttribute("onclick") === "loadGame()"){
-                b.classList.remove("dim");
-            }
-            else{
-                b.classList.add("dim");
-            }
-        }else{
-            b.classList.remove("dim");
-            
-            if(b.id==="minerBtn" && data >= minerCost){
-                b.classList.add("highlight");
-            }
-            else if(b.id==="autoBtn" && data >= autoCost){
-                b.classList.add("highlight");
-            }
-            else if(b.id==="autoSpeedBtn" && usd >= autoSpeedCost){
-                b.classList.add("highlight");
-            }
-            else if(b.id==="connUpgradeBtn" && data >= connCost){
-                b.classList.add("highlight");
-            }
-            else if(b.id==="firewallBtn" && usd >= firewallCost){
-                b.classList.add("highlight");
-            }
-            else if(b.id==="intervalBtn" && usd >= intervalCost){
-                b.classList.add("highlight");
-            }
-            else if(b.id==="buyHackerBtn" && usd >= hackerCost){
-                b.classList.add("highlight");
-            }
-            else if(b.id==="botNetBtn" && usd >= botCost){
-                b.classList.add("highlight");
-            }
-            else if(b.id==="autoReconnectBtn" && usd >= 50000){
-                b.classList.add("highlight");
-            }
-        }
-    });
+function formatNumber(n){
+    if(n >= 1e15) return Math.floor(n / 1e15) + "P";
+    if(n >= 1e12) return Math.floor(n / 1e12) + "T";
+    if(n >= 1e9) return Math.floor(n / 1e9) + "B";
+    if(n >= 1e6) return Math.floor(n / 1e6) + "M";
+    return Math.floor(n).toString();
 }
 
-function openTab(e,id){
-    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-    e.target.classList.add("active");
-    document.querySelectorAll(".box").forEach(b=>b.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-}
-
-function mineData(){
-    if(!connected){log("consoleFarm","NETWORK OFFLINE"); return;}
-    data+=speed*prestigeBonus;
-    usd+=speed*0.00001*prestigeBonus;
-    log("consoleFarm",codeLine());
-    update();
-    updateButtons();
-}
-
-function upgradeMiner(){
-    if(data>=minerCost){
-        data-=minerCost;
-        minerLevel++;
-        speed+=500;
-        minerCost=Math.floor(minerCost*1.8);
-        document.getElementById("minerCost").innerText=formatNumber(minerCost);
-        update();
-        updateButtons();
-        return true;
+function log(id, text) {
+    let box = document.getElementById(id);
+    let line = document.createElement("div");
+    if(Math.random() < 0.18) {
+        let err = document.createElement("span");
+        err.className = "error";
+        let types = ["ERROR", "FAILED", "ACCESS DENIED", "TIMEOUT"];
+        err.textContent = types[Math.floor(Math.random() * types.length)] + " -> ";
+        line.appendChild(err);
     }
-    return false;
-}
-
-function buyAutoMiner(){
-    if(data>=autoCost){
-        data-=autoCost;
-        autoMiner++;
-        autoCost=Math.floor(autoCost*3);
-        updateAutoMinerButtonText();
-        updateButtons();
-        return true;
-    }
-    return false;
-}
-
-function upgradeAutoMinerSpeed() {
-    if(usd >= autoSpeedCost) {
-        usd -= autoSpeedCost;
-        autoMinerSpeed += 0.1;
-        autoSpeedCost = Math.floor(autoSpeedCost * 2);
-        document.getElementById("autoSpeedMult").innerText = autoMinerSpeed.toFixed(1) + "x";
-        document.getElementById("autoSpeedCost").innerText = formatNumber(autoSpeedCost);
-        log("consoleFarm", "AUTO MINER SPEED UPGRADED TO " + autoMinerSpeed.toFixed(1) + "x (Next: $" + formatNumber(autoSpeedCost) + ")");
-        update();
-        updateButtons();
-        return true;
-    }
-    return false;
-}
-
-function upgradeConnection(){
-    if(connectionLevel>=maxConnectionLevel) return false;
-    if(data>=connCost){
-        data-=connCost;
-        connectionLevel++;
-        connCost=Math.floor(connCost*1.6);
-        document.getElementById("connCost").innerText=formatNumber(connCost);
-        updateSignal();
-        update();
-        updateButtons();
-        scheduleDisconnectCheck();
-        return true;
-    }
-    return false;
-}
-
-function upgradeFirewall(){
-    if(usd>=firewallCost){
-        usd-=firewallCost;
-        firewallLevel++;
-        firewallCost=Math.floor(firewallCost*2);
-        document.getElementById("firewallLv").innerText=firewallLevel;
-        document.getElementById("firewallCost").innerText=formatNumber(firewallCost);
-        
-        let nameIndex = Math.min(firewallLevel, firewallNames.length-1);
-        document.getElementById("firewallName").innerText = firewallNames[nameIndex];
-        
-        updateFirewallBar();
-        updateButtons();
-        log("consoleFarm", "FIREWALL UPGRADED TO " + firewallNames[nameIndex] + " LEVEL " + firewallLevel);
-        
-        scheduleDisconnectCheck();
-        return true;
-    }
-    return false;
-}
-
-function upgradeCheckInterval() {
-    if (usd >= intervalCost) {
-        usd -= intervalCost;
-        checkIntervalBonus += 1;
-        intervalCost = Math.floor(intervalCost * 2.5);
-        document.getElementById("intervalCost").innerText = formatNumber(intervalCost);
-        log("consoleFarm", "CHECK INTERVAL UPGRADED TO +" + checkIntervalBonus + "s (Next: $" + formatNumber(intervalCost) + ")");
-        update();
-        updateButtons();
-        scheduleDisconnectCheck();
-        return true;
-    }
-    return false;
-}
-
-function buyHacker(){
-    if(usd>=hackerCost){
-        usd-=hackerCost;
-        hackers++;
-        update();
-        updateButtons();
-        return true;
-    }
-    return false;
-}
-
-function upgradeBotSpeed(){
-    if(usd>=botCost){
-        usd-=botCost;
-        botSpeed++;
-        update();
-        updateButtons();
-        return true;
-    }
-    return false;
-}
-
-function buyAutoReconnect(){
-    if(usd>=50000){
-        usd-=50000;
-        autoReconnect=true;
-        log("consoleFarm","AUTO RECONNECT ENABLED");
-        update();
-        updateButtons();
-        return true;
-    }
-    return false;
-}
-
-setInterval(()=>{
-    if(autoMiner>0 && connected){
-        let mined = autoMiner * autoMinerPower * autoMinerSpeed * prestigeBonus;
-        data+=mined;
-        usd+=mined*0.00001*prestigeBonus;
-        log("consoleFarm", "[AUTO] " + codeLine()); 
-        update();
-        updateButtons();
-    }
-},1200);
-
-function connectServer(){
-    if(connected) return; 
-    connected=true; 
-    log("consoleFarm","NETWORK CONNECTED"); 
-    updateSignal(); 
-    updateButtons();
-    scheduleDisconnectCheck();
-}
-
-function updateSignal(){
-    let basePercent = 1 + connectionLevel * 0.01;
-    if (basePercent > 99) basePercent = 99;
-    let totalPercent = basePercent + signalBonus;
-    if (totalPercent > 99) totalPercent = 99;
-    
-    document.getElementById("connLv").innerText = basePercent.toFixed(2) + "%";
-    
-    const levels = ["▁", "▂", "▃", "▄", "▅"];
-    let signalStr = "";
-    for (let i = 0; i < 5; i++) {
-        let intensity = Math.floor((totalPercent - (4 - i) * 20) / 20);
-        if (intensity < 0) intensity = 0;
-        if (intensity > 4) intensity = 4;
-        signalStr += levels[intensity];
-    }
-    document.getElementById("signal").innerText = signalStr + " " + totalPercent.toFixed(2) + "%";
-}
-
-function updateFirewallBar() {
-    let percent = (firewallLevel / FIREWALL_MAX_LEVEL) * 100;
-    if (percent > 100) percent = 100;
-    let bars = Math.floor(percent / 10);
-    let barStr = "";
-    for (let i = 0; i < 10; i++) {
-        barStr += i < bars ? "▰" : "▱";
-    }
-    document.getElementById("firewallBar").innerText = barStr;
-    document.getElementById("firewallLvBar").innerText = firewallLevel;
-}
-
-function getDisconnectInterval() {
-    let base = 10 + checkIntervalBonus + (firewallLevel * 0.5);
-    if (base > 30) base = 30;
-    if (base < 1) base = 1;
-    return base * 1000;
-}
-
-function scheduleDisconnectCheck() {
-    if (disconnectTimeout) {
-        clearTimeout(disconnectTimeout);
-        disconnectTimeout = null;
-    }
-    if (!connected) return;
-    
-    let interval = getDisconnectInterval();
-    disconnectTimeout = setTimeout(() => {
-        checkDisconnect();
-    }, interval);
-}
-
-function checkDisconnect() {
-    if (!connected) return;
-    
-    let basePercent = 1 + connectionLevel * 0.01;
-    if (basePercent > 99) basePercent = 99;
-    let totalPercent = basePercent + signalBonus;
-    if (totalPercent > 99) totalPercent = 99;
-    let dropChance = 100 - totalPercent - firewallLevel * 2;
-    if (dropChance < 1) dropChance = 1;
-    
-    if (Math.random() * 100 < dropChance) {
-        connected = false;
-        log("consoleFarm", "CONNECTION LOST");
-        updateButtons();
-        if (autoReconnect) {
-            setTimeout(() => {
-                connected = true;
-                log("consoleFarm", "AUTO RECONNECTED");
-                updateSignal();
-                updateButtons();
-                scheduleDisconnectCheck();
-            }, 2000);
-        }
-    } else {
-        scheduleDisconnectCheck();
-    }
-}
-
-setInterval(()=>{
-    if(signalBonus > 0){
-        signalBonus -= 1;
-        if(signalBonus < 0) signalBonus = 0;
-        updateSignal();
-    }
-},1000);
-
-function hackServer(name,diff){
-    if(!connected){log("consoleHack","NETWORK OFFLINE"); return;}
-    if(hacking) return;
-    hacking=true;
-    let bar=document.getElementById("hackBar"); 
-    let hackInfo=document.getElementById("hackInfo");
-    let fill=document.getElementById("hackFill");
-    bar.style.display="block"; 
-    hackInfo.style.display="block";
-    fill.style.width="0%";
-    
-    let hackerCommands=["backdoor","route ip","firewall bypass","ssh inject","buffer overflow","sql injection","xss attack","ddos flood","port scan","packet sniff","exploit","rootkit","malware","trojan","worm","virus"];
-    let dotIndex=0;
-    
-    let dotTimer=setInterval(()=>{
-        let dots=[".","..","..."];
-        document.getElementById("hackDots").innerText=dots[dotIndex%3];
-        dotIndex++;
-    },300);
-    
-    let commandTimer=setInterval(()=>{
-        document.getElementById("hackCommand").innerText=" "+hackerCommands[Math.floor(Math.random()*hackerCommands.length)];
-    },500);
-    
-    let progress=0; let speedHack=(3+download)*0.5;
-    let timer=setInterval(()=>{
-        progress+=speedHack;
-        fill.style.width=progress+"%";
-        if(progress>=100){
-            clearInterval(timer); 
-            clearInterval(dotTimer);
-            clearInterval(commandTimer);
-            bar.style.display="none";
-            hackInfo.style.display="none";
-            let chance=diff-(software*5);
-            if(Math.random()*100>chance){
-                let reward=Math.floor(diff/3*prestigeBonus); 
-                usd+=reward;
-                
-                let successLines = [
-                    "> Scanning ports... 192.168." + Math.floor(Math.random()*255) + "." + Math.floor(Math.random()*255) + ":22 open",
-                    "> Exploiting vulnerability... CVE-202" + Math.floor(Math.random()*9) + "-" + Math.floor(Math.random()*9000+1000),
-                    "> Bypassing firewall... " + Math.floor(Math.random()*40+60) + "% complete",
-                    "> Extracting data packets... " + (Math.random()*5).toFixed(1) + " MB transferred",
-                    "> Root access granted"
-                ];
-                successLines.forEach((line, index) => {
-                    setTimeout(() => {
-                        log("consoleHack", line);
-                    }, index * 150);
-                });
-                setTimeout(() => {
-                    log("consoleHack", "ACCESS " + name + " +$" + reward);
-                }, successLines.length * 150 + 200);
-                
-                if(signalBonus <= 0){
-                    signalBonus = diff;
-                    if(signalBonus > 99) signalBonus = 99;
-                    log("consoleHack","SIGNAL BOOST +"+diff+"% (Decays 1% per second)");
-                    updateSignal();
-                } else {
-                    log("consoleHack","SIGNAL BOOST BLOCKED - Wait for current boost to end");
-                }
-            }
-            else{
-                let loss=Math.floor(diff/4); 
-                usd-=loss;
-                let hackLines = [
-                    "> INTRUSION ALERT",
-                    "> TRACING BACK...",
-                    "> FIREWALL BREACH DETECTED",
-                    "> COUNTERMEASURES DEPLOYED",
-                    "> CONNECTION TERMINATED"
-                ];
-                hackLines.forEach((line, index) => {
-                    setTimeout(() => {
-                        log("consoleHack", line);
-                    }, index * 150);
-                });
-                setTimeout(() => {
-                    log("consoleHack", "INVASÃO DETECTADA - QUEBRA DE SEGURANÇA -$" + loss);
-                }, hackLines.length * 150 + 200);
-            }
-            update(); hacking=false; updateButtons();
-        }
-    },120);
-}
-
-function loadServers(){
-    const servers = [
-        { name: "USA", diff: 80 },
-        { name: "CHINA", diff: 75 },
-        { name: "RUSSIA", diff: 70 },
-        { name: "ISRAEL", diff: 70 },
-        { name: "UK", diff: 65 },
-        { name: "SOUTH KOREA", diff: 65 },
-        { name: "GERMANY", diff: 60 },
-        { name: "JAPAN", diff: 60 },
-        { name: "FRANCE", diff: 55 },
-        { name: "INDIA", diff: 50 },
-        { name: "CANADA", diff: 50 },
-        { name: "BRAZIL", diff: 40 }
-    ];
-    
-    let div = document.getElementById("servers");
-    div.innerHTML = '';
-    servers.forEach(s => {
-        let btn = document.createElement("button");
-        btn.className = "serverBtn";
-        btn.innerText = "Hack " + s.name;
-        btn.onclick = function() { hackServer(s.name, s.diff); };
-        div.appendChild(btn);
-    });
-}
-
-function prestigeNetwork(){
-    if(usd>=1000000){
-        usd-=1000000;
-        data=0;
-        speed=1000;
-        minerLevel=1;
-        autoMiner=0;
-        autoMinerPower=400;
-        autoMinerSpeed=1.0;
-        autoSpeedCost=300;
-        connectionLevel=1;
-        firewallLevel=0;
-        firewallCost=5000;
-        checkIntervalBonus = 0;
-        intervalCost = 2000;
-        hackers=0;
-        botSpeed=1;
-        download=1;
-        software=1;
-        prestigeBonus*=1.5;
-        signalBonus=0;
-        document.getElementById("hackBar").style.display="none";
-        document.getElementById("hackInfo").style.display="none";
-        updateAutoMinerButtonText();
-        document.getElementById("firewallName").innerText = firewallNames[0];
-        updateFirewallBar();
-        update();
-        updateButtons();
-        log("consoleOps","NETWORK PRESTIGED! Bonus x"+prestigeBonus.toFixed(2));
-        
-        if (connected) scheduleDisconnectCheck();
-    }
-}
-
-function upgradeDownload(){
-    if(usd>=downCost){
-        usd-=downCost;
-        download++;
-        downCost=Math.floor(downCost*2.5);
-        document.getElementById("downCost").innerText=formatNumber(downCost);
-        update();
-        updateButtons();
-        return true;
-    }
-    return false;
-}
-
-function upgradeSoftware(){
-    if(usd>=softCost){
-        usd-=softCost;
-        software++;
-        softCost=Math.floor(softCost*2.5);
-        document.getElementById("softCost").innerText=formatNumber(softCost);
-        update();
-        updateButtons();
-        return true;
-    }
-    return false;
-}
-
-function log(id,text){
-    let box=document.getElementById(id); let line=document.createElement("div");
-    if(Math.random()<0.18){let err=document.createElement("span"); err.className="error";
-    let types=["ERROR","FAILED","ACCESS DENIED","TIMEOUT"]; err.textContent=types[Math.floor(Math.random()*types.length)]+" -> "; line.appendChild(err);}
-    line.innerHTML+=text; box.appendChild(line); box.scrollTop=box.scrollHeight;
+    line.innerHTML += text;
+    box.appendChild(line);
+    box.scrollTop = box.scrollHeight;
 }
 
 function codeLine(){
@@ -640,17 +181,71 @@ function codeLine(){
     return codes[Math.floor(Math.random() * codes.length)];
 }
 
-function formatNumber(n){
-    if(n >= 1e15) return Math.floor(n / 1e15) + "P";
-    if(n >= 1e12) return Math.floor(n / 1e12) + "T";
-    if(n >= 1e9) return Math.floor(n / 1e9) + "B";
-    if(n >= 1e6) return Math.floor(n / 1e6) + "M";
-    return Math.floor(n).toString();
+// ==================== ATUALIZAÇÃO DE INTERFACE ====================
+function updateButtons(){
+    let buttons = document.querySelectorAll("button");
+    buttons.forEach(b => {
+        b.classList.remove("highlight", "dim");
+        if(!connected) {
+            if(b.id === "connectBtn") {
+                b.classList.remove("dim");
+                b.classList.add("highlight");
+            } else if(b.getAttribute("onclick") === "saveGame()" || b.getAttribute("onclick") === "loadGame()" || b.getAttribute("onclick") === "exportSave()" || b.getAttribute("onclick")?.includes("importFile.click()")) {
+                b.classList.remove("dim");
+            } else {
+                b.classList.add("dim");
+            }
+        } else {
+            b.classList.remove("dim");
+            if((b.id === "minerBtn" && data >= minerCost) ||
+               (b.id === "autoBtn" && data >= autoCost) ||
+               (b.id === "autoSpeedBtn" && usd >= autoSpeedCost) ||
+               (b.id === "connUpgradeBtn" && data >= connCost) ||
+               (b.id === "firewallBtn" && usd >= firewallCost) ||
+               (b.id === "intervalBtn" && usd >= intervalCost) ||
+               (b.id === "buyHackerBtn" && usd >= hackerCost) ||
+               (b.id === "botNetBtn" && usd >= botCost) ||
+               (b.id === "autoReconnectBtn" && usd >= 50000)) {
+                b.classList.add("highlight");
+            }
+        }
+    });
+}
+
+function updateSignal(){
+    let basePercent = 1 + connectionLevel * 0.01;
+    if(basePercent > 99) basePercent = 99;
+    let totalPercent = basePercent + signalBonus;
+    if(totalPercent > 99) totalPercent = 99;
+    
+    document.getElementById("connLv").innerText = basePercent.toFixed(2) + "%";
+    
+    const levels = ["▁", "▂", "▃", "▄", "▅"];
+    let signalStr = "";
+    for(let i = 0; i < 5; i++) {
+        let intensity = Math.floor((totalPercent - (4 - i) * 20) / 20);
+        if(intensity < 0) intensity = 0;
+        if(intensity > 4) intensity = 4;
+        signalStr += levels[intensity];
+    }
+    document.getElementById("signal").innerText = signalStr + " " + totalPercent.toFixed(2) + "%";
+}
+
+function updateFirewallBar() {
+    let percent = (firewallLevel / FIREWALL_MAX_LEVEL) * 100;
+    if(percent > 100) percent = 100;
+    let bars = Math.floor(percent / 10);
+    let barStr = "";
+    for(let i = 0; i < 10; i++) {
+        barStr += i < bars ? "▰" : "▱";
+    }
+    document.getElementById("firewallBar").innerText = barStr;
+    document.getElementById("firewallLvBar").innerText = firewallLevel;
 }
 
 function updateAutoMinerButtonText() {
     let btn = document.getElementById("autoBtn");
-    if (autoMiner > 0) {
+    if(autoMiner > 0) {
         btn.innerHTML = `Auto Miner Rate (<span id="autoCost">${formatNumber(autoCost)}</span>)`;
     } else {
         btn.innerHTML = `Auto Miner (<span id="autoCost">${formatNumber(autoCost)}</span>)`;
@@ -658,55 +253,398 @@ function updateAutoMinerButtonText() {
 }
 
 function update(){
-    document.getElementById("dataVal").innerText=formatNumber(data);
-    document.getElementById("usdVal").innerText=formatNumber(usd);
+    document.getElementById("dataVal").innerText = formatNumber(data);
+    document.getElementById("usdVal").innerText = formatNumber(usd);
     
     let extractionRate = speed * prestigeBonus;
     let autoMinerRate = autoMiner > 0 ? autoMiner * autoMinerPower * autoMinerSpeed * prestigeBonus * (1000/1200) : 0;
     let totalRate = extractionRate + autoMinerRate;
     
     document.getElementById("speedVal").innerText = formatNumber(totalRate) + "/s";
-    document.getElementById("hackersVal").innerText=hackers;
-    document.getElementById("minerCost").innerText=formatNumber(minerCost);
-    document.getElementById("autoSpeedCost").innerText=formatNumber(autoSpeedCost);
-    document.getElementById("connCost").innerText=formatNumber(connCost);
-    document.getElementById("firewallLv").innerText=firewallLevel;
-    document.getElementById("firewallCost").innerText=formatNumber(firewallCost);
-    document.getElementById("intervalCost").innerText=formatNumber(intervalCost);
-    document.getElementById("downCost").innerText=formatNumber(downCost);
-    document.getElementById("softCost").innerText=formatNumber(softCost);
-    document.getElementById("hackerCost").innerText=formatNumber(hackerCost);
-    document.getElementById("botCost").innerText=formatNumber(botCost);
-    document.getElementById("extractionRate").innerText=formatNumber(extractionRate);
-    document.getElementById("autoMinerRate").innerText=formatNumber(autoMinerRate);
-    document.getElementById("autoSpeedMult").innerText=autoMinerSpeed.toFixed(1)+"x";
+    document.getElementById("hackersVal").innerText = hackers;
+    document.getElementById("minerCost").innerText = formatNumber(minerCost);
+    document.getElementById("autoSpeedCost").innerText = formatNumber(autoSpeedCost);
+    document.getElementById("connCost").innerText = formatNumber(connCost);
+    document.getElementById("firewallLv").innerText = firewallLevel;
+    document.getElementById("firewallCost").innerText = formatNumber(firewallCost);
+    document.getElementById("intervalCost").innerText = formatNumber(intervalCost);
+    document.getElementById("downCost").innerText = formatNumber(downCost);
+    document.getElementById("softCost").innerText = formatNumber(softCost);
+    document.getElementById("hackerCost").innerText = formatNumber(hackerCost);
+    document.getElementById("botCost").innerText = formatNumber(botCost);
+    document.getElementById("extractionRate").innerText = formatNumber(extractionRate);
+    document.getElementById("autoMinerRate").innerText = formatNumber(autoMinerRate);
+    document.getElementById("autoSpeedMult").innerText = autoMinerSpeed.toFixed(1) + "x";
     
     updateAutoMinerButtonText();
     
-    let nameIndex = Math.min(firewallLevel, firewallNames.length-1);
+    let nameIndex = Math.min(firewallLevel, firewallNames.length - 1);
     document.getElementById("firewallName").innerText = firewallNames[nameIndex];
     
     updateFirewallBar();
-    
     updateButtons();
 }
 
-function updatePing(){
-    if(!connected){document.getElementById("ping").innerText="---";document.getElementById("latency").innerText="OFFLINE";return;}
-    let basePercent=1+connectionLevel*0.01;
-    if(basePercent>99) basePercent=99;
-    let totalPercent = basePercent + signalBonus;
-    if(totalPercent>99) totalPercent=99;
-    let basePing=200-connectionLevel*1.5;if(basePing<20) basePing=20;
-    let jitter=Math.random()*30;
-    let finalPing=Math.floor(basePing+jitter);
-    document.getElementById("ping").innerText=finalPing;
-    let latencyStatus=finalPing<50?"EXCELLENT":finalPing<100?"GOOD":finalPing<150?"FAIR":"POOR";
-    document.getElementById("latency").innerText=latencyStatus;
+// ==================== MECÂNICAS DO JOGO ====================
+function mineData(){
+    if(!connected) { log("consoleFarm", "NETWORK OFFLINE"); return; }
+    data += speed * prestigeBonus;
+    usd += speed * 0.00001 * prestigeBonus;
+    log("consoleFarm", codeLine());
+    update();
 }
 
-function saveGame(){
-    let gameState = {
+function upgradeMiner(){
+    if(data >= minerCost) {
+        data -= minerCost;
+        minerLevel++;
+        speed += 500;
+        minerCost = Math.floor(minerCost * 1.8);
+        update();
+        return true;
+    }
+    return false;
+}
+
+function buyAutoMiner(){
+    if(data >= autoCost) {
+        data -= autoCost;
+        autoMiner++;
+        autoCost = Math.floor(autoCost * 3);
+        update();
+        return true;
+    }
+    return false;
+}
+
+function upgradeAutoMinerSpeed() {
+    if(usd >= autoSpeedCost) {
+        usd -= autoSpeedCost;
+        autoMinerSpeed += 0.1;
+        autoSpeedCost = Math.floor(autoSpeedCost * 2);
+        document.getElementById("autoSpeedMult").innerText = autoMinerSpeed.toFixed(1) + "x";
+        document.getElementById("autoSpeedCost").innerText = formatNumber(autoSpeedCost);
+        log("consoleFarm", "AUTO MINER SPEED UPGRADED TO " + autoMinerSpeed.toFixed(1) + "x (Next: $" + formatNumber(autoSpeedCost) + ")");
+        update();
+        return true;
+    }
+    return false;
+}
+
+function upgradeConnection(){
+    if(connectionLevel >= maxConnectionLevel) return false;
+    if(data >= connCost) {
+        data -= connCost;
+        connectionLevel++;
+        connCost = Math.floor(connCost * 1.6);
+        updateSignal();
+        update();
+        scheduleDisconnectCheck();
+        return true;
+    }
+    return false;
+}
+
+function upgradeFirewall(){
+    if(usd >= firewallCost) {
+        usd -= firewallCost;
+        firewallLevel++;
+        firewallCost = Math.floor(firewallCost * 2);
+        document.getElementById("firewallLv").innerText = firewallLevel;
+        document.getElementById("firewallCost").innerText = formatNumber(firewallCost);
+        let nameIndex = Math.min(firewallLevel, firewallNames.length - 1);
+        document.getElementById("firewallName").innerText = firewallNames[nameIndex];
+        updateFirewallBar();
+        log("consoleFarm", "FIREWALL UPGRADED TO " + firewallNames[nameIndex] + " LEVEL " + firewallLevel);
+        scheduleDisconnectCheck();
+        return true;
+    }
+    return false;
+}
+
+function upgradeCheckInterval() {
+    if(usd >= intervalCost) {
+        usd -= intervalCost;
+        checkIntervalBonus += 1;
+        intervalCost = Math.floor(intervalCost * 2.5);
+        document.getElementById("intervalCost").innerText = formatNumber(intervalCost);
+        log("consoleFarm", "CHECK INTERVAL UPGRADED TO +" + checkIntervalBonus + "s (Next: $" + formatNumber(intervalCost) + ")");
+        update();
+        scheduleDisconnectCheck();
+        return true;
+    }
+    return false;
+}
+
+function buyHacker(){
+    if(usd >= hackerCost) {
+        usd -= hackerCost;
+        hackers++;
+        update();
+        return true;
+    }
+    return false;
+}
+
+function upgradeBotSpeed(){
+    if(usd >= botCost) {
+        usd -= botCost;
+        botSpeed++;
+        update();
+        return true;
+    }
+    return false;
+}
+
+function buyAutoReconnect(){
+    if(usd >= 50000) {
+        usd -= 50000;
+        autoReconnect = true;
+        log("consoleFarm", "AUTO RECONNECT ENABLED");
+        update();
+        return true;
+    }
+    return false;
+}
+
+setInterval(() => {
+    if(autoMiner > 0 && connected) {
+        let mined = autoMiner * autoMinerPower * autoMinerSpeed * prestigeBonus;
+        data += mined;
+        usd += mined * 0.00001 * prestigeBonus;
+        log("consoleFarm", "[AUTO] " + codeLine());
+        update();
+    }
+}, 1200);
+
+function connectServer(){
+    if(connected) return;
+    connected = true;
+    log("consoleFarm", "NETWORK CONNECTED");
+    updateSignal();
+    update();
+    scheduleDisconnectCheck();
+}
+
+function getDisconnectInterval() {
+    let base = 10 + checkIntervalBonus + (firewallLevel * 0.5);
+    if(base > 30) base = 30;
+    if(base < 1) base = 1;
+    return base * 1000;
+}
+
+function scheduleDisconnectCheck() {
+    if(disconnectTimeout) clearTimeout(disconnectTimeout);
+    if(!connected) return;
+    disconnectTimeout = setTimeout(checkDisconnect, getDisconnectInterval());
+}
+
+function checkDisconnect() {
+    if(!connected) return;
+    let basePercent = 1 + connectionLevel * 0.01;
+    if(basePercent > 99) basePercent = 99;
+    let totalPercent = basePercent + signalBonus;
+    if(totalPercent > 99) totalPercent = 99;
+    let dropChance = 100 - totalPercent - firewallLevel * 2;
+    if(dropChance < 1) dropChance = 1;
+    
+    if(Math.random() * 100 < dropChance) {
+        connected = false;
+        log("consoleFarm", "CONNECTION LOST");
+        updateButtons();
+        if(autoReconnect) {
+            setTimeout(() => {
+                connected = true;
+                log("consoleFarm", "AUTO RECONNECTED");
+                updateSignal();
+                updateButtons();
+                scheduleDisconnectCheck();
+            }, 2000);
+        }
+    } else {
+        scheduleDisconnectCheck();
+    }
+}
+
+setInterval(() => {
+    if(signalBonus > 0) {
+        signalBonus -= 1;
+        if(signalBonus < 0) signalBonus = 0;
+        updateSignal();
+    }
+}, 1000);
+
+function openTab(e, id) {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    e.target.classList.add("active");
+    document.querySelectorAll(".box").forEach(b => b.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+// ==================== SERVER HACKING ====================
+function hackServer(name, diff) {
+    if(!connected) { log("consoleHack", "NETWORK OFFLINE"); return; }
+    if(hacking) return;
+    hacking = true;
+    let bar = document.getElementById("hackBar");
+    let hackInfo = document.getElementById("hackInfo");
+    let fill = document.getElementById("hackFill");
+    bar.style.display = "block";
+    hackInfo.style.display = "block";
+    fill.style.width = "0%";
+    
+    let hackerCommands = ["backdoor", "route ip", "firewall bypass", "ssh inject", "buffer overflow", "sql injection", "xss attack", "ddos flood", "port scan", "packet sniff", "exploit", "rootkit", "malware", "trojan", "worm", "virus"];
+    let dotIndex = 0;
+    
+    let dotTimer = setInterval(() => {
+        let dots = [".", "..", "..."];
+        document.getElementById("hackDots").innerText = dots[dotIndex % 3];
+        dotIndex++;
+    }, 300);
+    
+    let commandTimer = setInterval(() => {
+        document.getElementById("hackCommand").innerText = " " + hackerCommands[Math.floor(Math.random() * hackerCommands.length)];
+    }, 500);
+    
+    let progress = 0;
+    let speedHack = (3 + download) * 0.5;
+    let timer = setInterval(() => {
+        progress += speedHack;
+        fill.style.width = progress + "%";
+        if(progress >= 100) {
+            clearInterval(timer);
+            clearInterval(dotTimer);
+            clearInterval(commandTimer);
+            bar.style.display = "none";
+            hackInfo.style.display = "none";
+            let chance = diff - (software * 5);
+            if(Math.random() * 100 > chance) {
+                let reward = Math.floor(diff / 3 * prestigeBonus);
+                usd += reward;
+                
+                let successLines = [
+                    "> Scanning ports... 192.168." + Math.floor(Math.random()*255) + "." + Math.floor(Math.random()*255) + ":22 open",
+                    "> Exploiting vulnerability... CVE-202" + Math.floor(Math.random()*9) + "-" + Math.floor(Math.random()*9000+1000),
+                    "> Bypassing firewall... " + Math.floor(Math.random()*40+60) + "% complete",
+                    "> Extracting data packets... " + (Math.random()*5).toFixed(1) + " MB transferred",
+                    "> Root access granted"
+                ];
+                successLines.forEach((line, idx) => {
+                    setTimeout(() => log("consoleHack", line), idx * 150);
+                });
+                setTimeout(() => log("consoleHack", "ACCESS " + name + " +$" + reward), successLines.length * 150 + 200);
+                
+                if(signalBonus <= 0) {
+                    signalBonus = diff;
+                    if(signalBonus > 99) signalBonus = 99;
+                    log("consoleHack", "SIGNAL BOOST +" + diff + "% (Decays 1% per second)");
+                    updateSignal();
+                } else {
+                    log("consoleHack", "SIGNAL BOOST BLOCKED - Wait for current boost to end");
+                }
+            } else {
+                let loss = Math.floor(diff / 4);
+                usd -= loss;
+                let hackLines = [
+                    "> INTRUSION ALERT",
+                    "> TRACING BACK...",
+                    "> FIREWALL BREACH DETECTED",
+                    "> COUNTERMEASURES DEPLOYED",
+                    "> CONNECTION TERMINATED"
+                ];
+                hackLines.forEach((line, idx) => {
+                    setTimeout(() => log("consoleHack", line), idx * 150);
+                });
+                setTimeout(() => log("consoleHack", "INVASÃO DETECTADA - QUEBRA DE SEGURANÇA -$" + loss), hackLines.length * 150 + 200);
+            }
+            update();
+            hacking = false;
+        }
+    }, 120);
+}
+
+function loadServers() {
+    const servers = [
+        { name: "USA", diff: 80 },
+        { name: "CHINA", diff: 75 },
+        { name: "RUSSIA", diff: 70 },
+        { name: "ISRAEL", diff: 70 },
+        { name: "UK", diff: 65 },
+        { name: "SOUTH KOREA", diff: 65 },
+        { name: "GERMANY", diff: 60 },
+        { name: "JAPAN", diff: 60 },
+        { name: "FRANCE", diff: 55 },
+        { name: "INDIA", diff: 50 },
+        { name: "CANADA", diff: 50 },
+        { name: "BRAZIL", diff: 40 }
+    ];
+    let div = document.getElementById("servers");
+    div.innerHTML = '';
+    servers.forEach(s => {
+        let btn = document.createElement("button");
+        btn.className = "serverBtn";
+        btn.innerText = "Hack " + s.name;
+        btn.onclick = function() { hackServer(s.name, s.diff); };
+        div.appendChild(btn);
+    });
+}
+
+function upgradeDownload() {
+    if(usd >= downCost) {
+        usd -= downCost;
+        download++;
+        downCost = Math.floor(downCost * 2.5);
+        update();
+        return true;
+    }
+    return false;
+}
+
+function upgradeSoftware() {
+    if(usd >= softCost) {
+        usd -= softCost;
+        software++;
+        softCost = Math.floor(softCost * 2.5);
+        update();
+        return true;
+    }
+    return false;
+}
+
+function prestigeNetwork() {
+    if(usd >= 1000000) {
+        usd -= 1000000;
+        data = 0;
+        speed = 1000;
+        minerLevel = 1;
+        autoMiner = 0;
+        autoMinerPower = 400;
+        autoMinerSpeed = 1.0;
+        autoSpeedCost = 300;
+        connectionLevel = 1;
+        firewallLevel = 0;
+        firewallCost = 5000;
+        checkIntervalBonus = 0;
+        intervalCost = 2000;
+        hackers = 0;
+        botSpeed = 1;
+        download = 1;
+        software = 1;
+        prestigeBonus *= 1.5;
+        signalBonus = 0;
+        document.getElementById("hackBar").style.display = "none";
+        document.getElementById("hackInfo").style.display = "none";
+        document.getElementById("firewallName").innerText = firewallNames[0];
+        updateFirewallBar();
+        update();
+        log("consoleOps", "NETWORK PRESTIGED! Bonus x" + prestigeBonus.toFixed(2));
+        if(connected) scheduleDisconnectCheck();
+    }
+}
+
+// ==================== SAVE/LOAD (localStorage e arquivo) ====================
+function getGameState() {
+    return {
         data, usd, speed, minerLevel, minerCost, autoMiner, autoCost,
         autoMinerPower, autoMinerSpeed, autoSpeedCost,
         connectionLevel, connCost, firewallLevel, firewallCost,
@@ -714,55 +652,103 @@ function saveGame(){
         autoReconnect, hackers, hackerCost, botSpeed, botCost,
         download, software, downCost, softCost, prestigeBonus, signalBonus
     };
-    localStorage.setItem("dataMinerSave", JSON.stringify(gameState));
+}
+
+function loadGameState(state) {
+    data = state.data; usd = state.usd; speed = state.speed;
+    minerLevel = state.minerLevel; minerCost = state.minerCost;
+    autoMiner = state.autoMiner; autoCost = state.autoCost;
+    autoMinerPower = state.autoMinerPower || 400;
+    autoMinerSpeed = state.autoMinerSpeed || 1.0;
+    autoSpeedCost = state.autoSpeedCost || 300;
+    connectionLevel = state.connectionLevel; connCost = state.connCost;
+    firewallLevel = state.firewallLevel || 0; firewallCost = state.firewallCost || 5000;
+    checkIntervalBonus = state.checkIntervalBonus || 0;
+    intervalCost = state.intervalCost || 2000;
+    autoReconnect = state.autoReconnect; hackers = state.hackers;
+    hackerCost = state.hackerCost; botSpeed = state.botSpeed;
+    botCost = state.botCost; download = state.download;
+    software = state.software; downCost = state.downCost;
+    softCost = state.softCost; prestigeBonus = state.prestigeBonus;
+    signalBonus = state.signalBonus || 0;
+    update();
+    updateSignal();
+}
+
+function saveGame() {
+    localStorage.setItem("dataMinerSave", JSON.stringify(getGameState()));
     log("consoleFarm", "SYSTEM: PROGRESS SAVED TO LOCAL STORAGE");
     showNotification("JOGO SALVO!");
 }
 
-function loadGame(){
+function loadGame() {
     let savedData = localStorage.getItem("dataMinerSave");
-    if(savedData){
-        let state = JSON.parse(savedData);
-        data = state.data; usd = state.usd; speed = state.speed;
-        minerLevel = state.minerLevel; minerCost = state.minerCost;
-        autoMiner = state.autoMiner; autoCost = state.autoCost;
-        autoMinerPower = state.autoMinerPower || 400;
-        autoMinerSpeed = state.autoMinerSpeed || 1.0;
-        autoSpeedCost = state.autoSpeedCost || 300;
-        connectionLevel = state.connectionLevel; connCost = state.connCost;
-        firewallLevel = state.firewallLevel || 0; firewallCost = state.firewallCost || 5000;
-        checkIntervalBonus = state.checkIntervalBonus || 0;
-        intervalCost = state.intervalCost || 2000;
-        autoReconnect = state.autoReconnect; hackers = state.hackers;
-        hackerCost = state.hackerCost; botSpeed = state.botSpeed;
-        botCost = state.botCost; download = state.download;
-        software = state.software; downCost = state.downCost;
-        softCost = state.softCost; prestigeBonus = state.prestigeBonus;
-        signalBonus = state.signalBonus || 0;
-        update();
-        updateSignal();
-        log("consoleFarm", "SYSTEM: PROGRESS LOADED SUCCESSFULLY");
-        showNotification("JOGO CARREGADO!");
-        
-        if (connected) scheduleDisconnectCheck();
+    if(savedData) {
+        try {
+            let state = JSON.parse(savedData);
+            loadGameState(state);
+            log("consoleFarm", "SYSTEM: PROGRESS LOADED SUCCESSFULLY");
+            showNotification("JOGO CARREGADO!");
+        } catch(e) {
+            log("consoleFarm", "SYSTEM: CORRUPTED SAVE DATA");
+            showNotification("DADOS CORROMPIDOS!");
+        }
     } else {
         log("consoleFarm", "SYSTEM: NO SAVE DATA FOUND");
         showNotification("NENHUM SAVE ENCONTRADO!");
     }
+    if(connected) scheduleDisconnectCheck();
 }
 
+function exportSave() {
+    const gameState = getGameState();
+    const dataStr = JSON.stringify(gameState, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'data_miner_save.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    log("consoleFarm", "SYSTEM: SAVE EXPORTED TO FILE");
+    showNotification("ARQUIVO GERADO!");
+}
+
+// Configura o input de importação
+document.getElementById('importFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const state = JSON.parse(e.target.result);
+            loadGameState(state);
+            log("consoleFarm", "SYSTEM: SAVE IMPORTED FROM FILE");
+            showNotification("JOGO IMPORTADO!");
+            if(connected) scheduleDisconnectCheck();
+        } catch(err) {
+            log("consoleFarm", "SYSTEM: INVALID SAVE FILE");
+            showNotification("ARQUIVO INVÁLIDO!");
+        }
+    };
+    reader.readAsText(file);
+    // Limpa o input para permitir reimportar o mesmo arquivo depois
+    e.target.value = '';
+});
+
+// ==================== HOLD BUTTONS ====================
 function startHold(buttonId, upgradeFunction) {
-    if (holdIntervals[buttonId]) return;
+    if(holdIntervals[buttonId]) return;
     let success = upgradeFunction();
-    if (!success) return;
+    if(!success) return;
     holdIntervals[buttonId] = setInterval(() => {
         let ok = upgradeFunction();
-        if (!ok) stopHold(buttonId);
+        if(!ok) stopHold(buttonId);
     }, 100);
 }
 
 function stopHold(buttonId) {
-    if (holdIntervals[buttonId]) {
+    if(holdIntervals[buttonId]) {
         clearInterval(holdIntervals[buttonId]);
         delete holdIntervals[buttonId];
     }
@@ -780,10 +766,9 @@ function setupHoldButtons() {
         { id: 'botNetBtn', func: upgradeBotSpeed },
         { id: 'autoReconnectBtn', func: buyAutoReconnect }
     ];
-    
     upgradeButtons.forEach(item => {
         let btn = document.getElementById(item.id);
-        if (!btn) return;
+        if(!btn) return;
         btn.addEventListener('mousedown', (e) => {
             e.preventDefault();
             startHold(item.id, item.func);
@@ -794,26 +779,38 @@ function setupHoldButtons() {
     });
 }
 
-window.addEventListener('load', () => {
-    setupHoldButtons();
-});
+// ==================== INICIALIZAÇÃO ====================
+function updatePing() {
+    if(!connected) {
+        document.getElementById("ping").innerText = "---";
+        document.getElementById("latency").innerText = "OFFLINE";
+        return;
+    }
+    let basePercent = 1 + connectionLevel * 0.01;
+    if(basePercent > 99) basePercent = 99;
+    let totalPercent = basePercent + signalBonus;
+    if(totalPercent > 99) totalPercent = 99;
+    let basePing = 200 - connectionLevel * 1.5;
+    if(basePing < 20) basePing = 20;
+    let jitter = Math.random() * 30;
+    let finalPing = Math.floor(basePing + jitter);
+    document.getElementById("ping").innerText = finalPing;
+    let latencyStatus = finalPing < 50 ? "EXCELLENT" : finalPing < 100 ? "GOOD" : finalPing < 150 ? "FAIR" : "POOR";
+    document.getElementById("latency").innerText = latencyStatus;
+}
 
-setInterval(updatePing,1500);
+setInterval(updatePing, 1500);
 
 loadServers();
 updateSignal();
 update();
-updateButtons();
+setupHoldButtons();
 
-// Evento de clique no consoleFarm para minerar dados
+// Clique no console para minerar
 document.getElementById('consoleFarm').addEventListener('click', function(e) {
     let selection = window.getSelection().toString();
-    if (selection.length === 0) {
-        mineData();
-    }
+    if(selection.length === 0) mineData();
 });
-
-// Efeitos visuais no console
 document.getElementById('consoleFarm').addEventListener('mousedown', function(e) {
     this.style.backgroundColor = '#002200';
 });
