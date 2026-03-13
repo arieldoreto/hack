@@ -42,13 +42,13 @@ button:hover{background:#003300;}
 <!-- DATA FARM -->
 <div id="farm" class="box active">
 <div class="panel">
-<button id="minerBtn" onclick="upgradeMiner()">Upgrade Miner Data Rate (<span id="minerCost">100</span>)</button>
-<button id="autoBtn" onclick="buyAutoMiner()">Auto Miner (<span id="autoCost">500</span>)</button>
+<button id="minerBtn" onclick="upgradeMiner()">Upgrade Miner Data Rate (<span id="minerCost">100 B</span>)</button>
+<button id="autoBtn" onclick="buyAutoMiner()">Auto Miner (<span id="autoCost">500 B</span>)</button>
 <button id="autoSpeedBtn" onclick="upgradeAutoMinerSpeed()">Upgrade Auto Miner Speed ($<span id="autoSpeedCost">300</span>)</button>
 <br><br>
-<button id="connUpgradeBtn" onclick="upgradeConnection()">Upgrade Connection (<span id="connCost">200</span>)</button>
+<button id="connUpgradeBtn" onclick="upgradeConnection()">Upgrade Connection (<span id="connCost">200 B</span>)</button>
 <button id="connectBtn" onclick="connectServer()">Establish Connection</button>
-<button id="autoReconnectBtn" onclick="buyAutoReconnect()">Auto Reconnect ($50000)</button>
+<button id="autoReconnectBtn" onclick="buyAutoReconnect()">Auto Reconnect ($<span id="autoReconnectCost">50000</span>)</button>
 <button id="firewallBtn" onclick="upgradeFirewall()">Firewall <span id="firewallName">Basic</span> Lv <span id="firewallLv">0</span> ($<span id="firewallCost">5000</span>)</button>
 <button id="intervalBtn" onclick="upgradeCheckInterval()">Upgrade Check Interval ($<span id="intervalCost">2000</span>)</button>
 <br><br>
@@ -75,7 +75,7 @@ button:hover{background:#003300;}
 <div class="panel">
 <button id="buyHackerBtn" onclick="buyHacker()">Buy Hacker ($<span id="hackerCost">200</span>)</button>
 <button id="botNetBtn" onclick="upgradeBotSpeed()">Upgrade Botnet ($<span id="botCost">150</span>)</button>
-<button onclick="prestigeNetwork()">PRESTIGE NETWORK ($1000000)</button>
+<button onclick="prestigeNetwork()">PRESTIGE NETWORK ($<span id="prestigeCost">1000000</span>)</button>
 </div>
 <div id="consoleOps" class="console"></div>
 <!-- Botões de save dentro da Dark Ops -->
@@ -89,9 +89,9 @@ button:hover{background:#003300;}
 </div>
 
 <br>
-DATA <span id="dataVal">0</span> | Total Speed <span id="speedVal">0/s</span> | USD $<span id="usdVal">0</span> | Hackers <span id="hackersVal">0</span>
+DATA <span id="dataVal">0 B</span> | Total Speed <span id="speedVal">0 B/s</span> | USD $<span id="usdVal">0</span> | Hackers <span id="hackersVal">0</span>
 <br>
-Extraction Rate <span id="extractionRate">0</span>/s | Auto Miner Rate <span id="autoMinerRate">0</span>/s | Auto Speed Multiplier <span id="autoSpeedMult">1.0x</span>
+Extraction Rate <span id="extractionRate">0 B/s</span> | Auto Miner Rate <span id="autoMinerRate">0 B/s</span> | Auto Speed Multiplier <span id="autoSpeedMult">1.0x</span>
 <br>
 PING <span id="ping">---</span> ms | LATENCY <span id="latency">OFFLINE</span>
 
@@ -107,6 +107,7 @@ let connected=false;
 let connectionLevel=1, maxConnectionLevel=99, connCost=200;
 let firewallLevel=0, firewallCost=5000;
 let autoReconnect=false;
+let autoReconnectCost = 50000;
 let hackers=0, hackerCost=200;
 let botSpeed=1, botCost=150;
 let download=1, software=1, downCost=50, softCost=80;
@@ -124,6 +125,34 @@ const FIREWALL_MAX_LEVEL = 99;
 
 const holdIntervals = {};
 
+// ==================== FUNÇÕES DE FORMATAÇÃO ====================
+function formatData(n) {
+    if (n >= 1e15) return (n / 1e15).toFixed(2) + ' PB';
+    if (n >= 1e12) return (n / 1e12).toFixed(2) + ' TB';
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + ' GB';
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + ' MB';
+    if (n >= 1e3) return (n / 1e3).toFixed(2) + ' KB';
+    return n + ' B';
+}
+
+function formatSpeed(n) {
+    if (n >= 1e15) return (n / 1e15).toFixed(2) + ' PB/s';
+    if (n >= 1e12) return (n / 1e12).toFixed(2) + ' TB/s';
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + ' GB/s';
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + ' MB/s';
+    if (n >= 1e3) return (n / 1e3).toFixed(2) + ' KB/s';
+    return n + ' B/s';
+}
+
+function formatUSD(n) {
+    if (n >= 1e15) return Math.floor(n / 1e15) + 'P';
+    if (n >= 1e12) return Math.floor(n / 1e12) + 'T';
+    if (n >= 1e9) return Math.floor(n / 1e9) + 'B';
+    if (n >= 1e6) return Math.floor(n / 1e6) + 'M';
+    if (n >= 1e3) return Math.floor(n / 1e3) + 'K';
+    return Math.floor(n).toString();
+}
+
 // ==================== FUNÇÕES AUXILIARES ====================
 function showNotification(message){
     let notification = document.createElement("div");
@@ -131,14 +160,6 @@ function showNotification(message){
     notification.innerText = message;
     document.body.appendChild(notification);
     setTimeout(() => notification.remove(), 2000);
-}
-
-function formatNumber(n){
-    if(n >= 1e15) return Math.floor(n / 1e15) + "P";
-    if(n >= 1e12) return Math.floor(n / 1e12) + "T";
-    if(n >= 1e9) return Math.floor(n / 1e9) + "B";
-    if(n >= 1e6) return Math.floor(n / 1e6) + "M";
-    return Math.floor(n).toString();
 }
 
 function log(id, text) {
@@ -206,7 +227,7 @@ function updateButtons(){
                (b.id === "intervalBtn" && usd >= intervalCost) ||
                (b.id === "buyHackerBtn" && usd >= hackerCost) ||
                (b.id === "botNetBtn" && usd >= botCost) ||
-               (b.id === "autoReconnectBtn" && usd >= 50000)) {
+               (b.id === "autoReconnectBtn" && usd >= autoReconnectCost)) {
                 b.classList.add("highlight");
             }
         }
@@ -245,35 +266,37 @@ function updateFirewallBar() {
 function updateAutoMinerButtonText() {
     let btn = document.getElementById("autoBtn");
     if(autoMiner > 0) {
-        btn.innerHTML = `Auto Miner Rate (<span id="autoCost">${formatNumber(autoCost)}</span>)`;
+        btn.innerHTML = `Auto Miner Rate (<span id="autoCost">${formatData(autoCost)}</span>)`;
     } else {
-        btn.innerHTML = `Auto Miner (<span id="autoCost">${formatNumber(autoCost)}</span>)`;
+        btn.innerHTML = `Auto Miner (<span id="autoCost">${formatData(autoCost)}</span>)`;
     }
 }
 
 function update(){
-    document.getElementById("dataVal").innerText = formatNumber(data);
-    document.getElementById("usdVal").innerText = formatNumber(usd);
+    document.getElementById("dataVal").innerText = formatData(data);
+    document.getElementById("usdVal").innerText = formatUSD(usd);
     
     let extractionRate = speed * prestigeBonus;
     let autoMinerRate = autoMiner > 0 ? autoMiner * autoMinerPower * autoMinerSpeed * prestigeBonus * (1000/1200) : 0;
     let totalRate = extractionRate + autoMinerRate;
     
-    document.getElementById("speedVal").innerText = formatNumber(totalRate) + "/s";
+    document.getElementById("speedVal").innerText = formatSpeed(totalRate);
     document.getElementById("hackersVal").innerText = hackers;
-    document.getElementById("minerCost").innerText = formatNumber(minerCost);
-    document.getElementById("autoSpeedCost").innerText = formatNumber(autoSpeedCost);
-    document.getElementById("connCost").innerText = formatNumber(connCost);
+    document.getElementById("minerCost").innerText = formatData(minerCost);
+    document.getElementById("autoSpeedCost").innerText = formatUSD(autoSpeedCost);
+    document.getElementById("connCost").innerText = formatData(connCost);
     document.getElementById("firewallLv").innerText = firewallLevel;
-    document.getElementById("firewallCost").innerText = formatNumber(firewallCost);
-    document.getElementById("intervalCost").innerText = formatNumber(intervalCost);
-    document.getElementById("downCost").innerText = formatNumber(downCost);
-    document.getElementById("softCost").innerText = formatNumber(softCost);
-    document.getElementById("hackerCost").innerText = formatNumber(hackerCost);
-    document.getElementById("botCost").innerText = formatNumber(botCost);
-    document.getElementById("extractionRate").innerText = formatNumber(extractionRate);
-    document.getElementById("autoMinerRate").innerText = formatNumber(autoMinerRate);
+    document.getElementById("firewallCost").innerText = formatUSD(firewallCost);
+    document.getElementById("intervalCost").innerText = formatUSD(intervalCost);
+    document.getElementById("downCost").innerText = formatUSD(downCost);
+    document.getElementById("softCost").innerText = formatUSD(softCost);
+    document.getElementById("hackerCost").innerText = formatUSD(hackerCost);
+    document.getElementById("botCost").innerText = formatUSD(botCost);
+    document.getElementById("extractionRate").innerText = formatSpeed(extractionRate);
+    document.getElementById("autoMinerRate").innerText = formatSpeed(autoMinerRate);
     document.getElementById("autoSpeedMult").innerText = autoMinerSpeed.toFixed(1) + "x";
+    document.getElementById("autoReconnectCost").innerText = formatUSD(autoReconnectCost);
+    document.getElementById("prestigeCost").innerText = formatUSD(1000000);
     
     updateAutoMinerButtonText();
     
@@ -322,8 +345,8 @@ function upgradeAutoMinerSpeed() {
         autoMinerSpeed += 0.1;
         autoSpeedCost = Math.floor(autoSpeedCost * 2);
         document.getElementById("autoSpeedMult").innerText = autoMinerSpeed.toFixed(1) + "x";
-        document.getElementById("autoSpeedCost").innerText = formatNumber(autoSpeedCost);
-        log("consoleFarm", "AUTO MINER SPEED UPGRADED TO " + autoMinerSpeed.toFixed(1) + "x (Next: $" + formatNumber(autoSpeedCost) + ")");
+        document.getElementById("autoSpeedCost").innerText = formatUSD(autoSpeedCost);
+        log("consoleFarm", "AUTO MINER SPEED UPGRADED TO " + autoMinerSpeed.toFixed(1) + "x (Next: $" + formatUSD(autoSpeedCost) + ")");
         update();
         return true;
     }
@@ -350,7 +373,7 @@ function upgradeFirewall(){
         firewallLevel++;
         firewallCost = Math.floor(firewallCost * 2);
         document.getElementById("firewallLv").innerText = firewallLevel;
-        document.getElementById("firewallCost").innerText = formatNumber(firewallCost);
+        document.getElementById("firewallCost").innerText = formatUSD(firewallCost);
         let nameIndex = Math.min(firewallLevel, firewallNames.length - 1);
         document.getElementById("firewallName").innerText = firewallNames[nameIndex];
         updateFirewallBar();
@@ -366,8 +389,8 @@ function upgradeCheckInterval() {
         usd -= intervalCost;
         checkIntervalBonus += 1;
         intervalCost = Math.floor(intervalCost * 2.5);
-        document.getElementById("intervalCost").innerText = formatNumber(intervalCost);
-        log("consoleFarm", "CHECK INTERVAL UPGRADED TO +" + checkIntervalBonus + "s (Next: $" + formatNumber(intervalCost) + ")");
+        document.getElementById("intervalCost").innerText = formatUSD(intervalCost);
+        log("consoleFarm", "CHECK INTERVAL UPGRADED TO +" + checkIntervalBonus + "s (Next: $" + formatUSD(intervalCost) + ")");
         update();
         scheduleDisconnectCheck();
         return true;
@@ -396,8 +419,8 @@ function upgradeBotSpeed(){
 }
 
 function buyAutoReconnect(){
-    if(usd >= 50000) {
-        usd -= 50000;
+    if(usd >= autoReconnectCost) {
+        usd -= autoReconnectCost;
         autoReconnect = true;
         log("consoleFarm", "AUTO RECONNECT ENABLED");
         update();
@@ -531,7 +554,7 @@ function hackServer(name, diff) {
                 successLines.forEach((line, idx) => {
                     setTimeout(() => log("consoleHack", line), idx * 150);
                 });
-                setTimeout(() => log("consoleHack", "ACCESS " + name + " +$" + reward), successLines.length * 150 + 200);
+                setTimeout(() => log("consoleHack", "ACCESS " + name + " +$" + formatUSD(reward)), successLines.length * 150 + 200);
                 
                 if(signalBonus <= 0) {
                     signalBonus = diff;
@@ -554,7 +577,7 @@ function hackServer(name, diff) {
                 hackLines.forEach((line, idx) => {
                     setTimeout(() => log("consoleHack", line), idx * 150);
                 });
-                setTimeout(() => log("consoleHack", "INVASÃO DETECTADA - QUEBRA DE SEGURANÇA -$" + loss), hackLines.length * 150 + 200);
+                setTimeout(() => log("consoleHack", "INVASÃO DETECTADA - QUEBRA DE SEGURANÇA -$" + formatUSD(loss)), hackLines.length * 150 + 200);
             }
             update();
             hacking = false;
