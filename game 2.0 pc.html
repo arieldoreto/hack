@@ -1,3 +1,4 @@
+Created by Ariel Doreto
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,8 +22,9 @@ button:hover{background:#003300;}
 .error{color:#ff3333;font-weight:bold;}
 .dim{opacity:0.35;pointer-events:none;}
 .highlight{background:#003300;box-shadow:0 0 10px #00ff00;}
-.bar{width:100%;border:1px solid #00ff00;height:20px;margin-top:8px;position:relative;}
-.fill{height:100%;width:0%;background:#00ff00;display:flex;align-items:center;justify-content:center;color:black;font-weight:bold;}
+.bar{width:100%;border:1px solid #00ff00;height:20px;margin-top:8px;position:relative;overflow:hidden;}
+.fill{height:100%;width:0%;background:#00ff00;position:relative;}
+.hack-info{text-align:center;color:#00ff00;font-weight:bold;margin-top:5px;white-space:nowrap;}
 .save-panel{margin-top:10px;padding:5px;border-top:1px solid #003300;}
 .notification{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:black;border:3px solid #00ff00;color:#00ff00;padding:30px;font-size:24px;font-weight:bold;text-align:center;z-index:1000;box-shadow:0 0 20px #00ff00;animation:fadeInOut 2s ease-in-out;}
 @keyframes fadeInOut{0%{opacity:0;transform:translate(-50%,-50%) scale(0.8);}50%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-50%) scale(0.8);}}
@@ -61,7 +63,8 @@ Connection Lv <span id="connLv">1%</span> | Network Signal <span id="signal">░
 <button onclick="upgradeSoftware()">Upgrade Software ($<span id="softCost">80</span>)</button>
 </div>
 <div id="servers"></div>
-<div id="hackBar" class="bar" style="display:none"><div id="hackFill" class="fill">HACKING SERV</div></div>
+<div id="hackBar" class="bar" style="display:none"><div id="hackFill" class="fill"></div></div>
+<div id="hackInfo" class="hack-info" style="display:none;">HACKING SERVER<span id="hackDots">.</span><span id="hackCommand"></span></div>
 <div id="consoleHack" class="console"></div>
 </div>
 
@@ -77,6 +80,8 @@ Connection Lv <span id="connLv">1%</span> | Network Signal <span id="signal">░
 
 <br>
 DATA <span id="dataVal">0</span> | Speed <span id="speedVal">1.00 Kpps</span> | USD $<span id="usdVal">0</span> | Hackers <span id="hackersVal">0</span>
+<br>
+Extraction Rate <span id="extractionRate">0</span>/s | Auto Miner Speed <span id="autoMinerSpeed">0</span>/s
 <br>
 PING <span id="ping">---</span> ms | LATENCY <span id="latency">OFFLINE</span>
 
@@ -98,6 +103,8 @@ let botSpeed=1, botCost=150;
 let download=1, software=1, downCost=50, softCost=80;
 let hacking=false;
 let prestigeBonus=1;
+let signalBonus=0;
+let signalBonusActive=false;
 
 function showNotification(message){
     let notification = document.createElement("div");
@@ -173,10 +180,15 @@ function upgradeConnection(){
 }
 
 function updateSignal(){
-    let percent=1+connectionLevel*0.01; if(percent>99) percent=99;
-    let bars=Math.floor(percent/10); let signal=""; for(let i=0;i<10;i++){signal+=i<bars?"█":"░";}
-    document.getElementById("signal").innerText="Network Signal "+signal+" "+percent.toFixed(2)+"%";
-    document.getElementById("connLv").innerText=percent.toFixed(2)+"%";
+    let basePercent=1+connectionLevel*0.01; 
+    if(basePercent>99) basePercent=99;
+    let totalPercent = basePercent + signalBonus;
+    if(totalPercent>99) totalPercent=99;
+    let bars=Math.floor(totalPercent/10); 
+    let signal=""; 
+    for(let i=0;i<10;i++){signal+=i<bars?"█":"░";}
+    document.getElementById("signal").innerText="Network Signal "+signal+" "+totalPercent.toFixed(2)+"%";
+    document.getElementById("connLv").innerText=totalPercent.toFixed(2)+"%";
 }
 
 function buyAutoReconnect(){if(usd>=50000){usd-=50000;autoReconnect=true; log("consoleFarm","AUTO RECONNECT ENABLED"); update(); updateButtons();}}
@@ -186,9 +198,11 @@ document.getElementById("firewallLv").innerText=firewallLevel;document.getElemen
 
 setInterval(()=>{
     if(!connected) return;
-    let signalPercent=connectionLevel*0.01+1;
-    if(signalPercent>99) signalPercent=99;
-    let dropChance=100-signalPercent-firewallLevel*2;
+    let basePercent=1+connectionLevel*0.01;
+    if(basePercent>99) basePercent=99;
+    let totalPercent = basePercent + signalBonus;
+    if(totalPercent>99) totalPercent=99;
+    let dropChance=100-totalPercent-firewallLevel*2;
     if(dropChance<1) dropChance=1;
     if(Math.random()*100<dropChance){
         connected=false; log("consoleFarm","CONNECTION LOST"); updateButtons();
@@ -196,21 +210,71 @@ setInterval(()=>{
     }
 },5000);
 
+// Decay signal bonus every second
+setInterval(()=>{
+    if(signalBonus > 0){
+        signalBonus -= 1;
+        if(signalBonus < 0) signalBonus = 0;
+        updateSignal();
+    }
+},1000);
+
 function hackServer(name,diff){
     if(!connected){log("consoleHack","NETWORK OFFLINE"); return;}
     if(hacking) return;
     hacking=true;
-    let bar=document.getElementById("hackBar"); let fill=document.getElementById("hackFill");
-    bar.style.display="block"; fill.style.width="0%"; fill.innerText="HACKING SERV";
-    let progress=0; let speedHack=3+download;
+    let bar=document.getElementById("hackBar"); 
+    let hackInfo=document.getElementById("hackInfo");
+    let fill=document.getElementById("hackFill");
+    bar.style.display="block"; 
+    hackInfo.style.display="block";
+    fill.style.width="0%";
+    
+    let hackerCommands=["backdoor","route ip","firewall bypass","ssh inject","buffer overflow","sql injection","xss attack","ddos flood","port scan","packet sniff","exploit","rootkit","malware","trojan","worm","virus"];
+    let dotIndex=0;
+    
+    // Animate dots
+    let dotTimer=setInterval(()=>{
+        let dots=[".","..","..."];
+        document.getElementById("hackDots").innerText=dots[dotIndex%3];
+        dotIndex++;
+    },300);
+    
+    // Change commands
+    let commandTimer=setInterval(()=>{
+        document.getElementById("hackCommand").innerText=" "+hackerCommands[Math.floor(Math.random()*hackerCommands.length)];
+    },500);
+    
+    let progress=0; let speedHack=(3+download)*0.5;
     let timer=setInterval(()=>{
         progress+=speedHack;
         fill.style.width=progress+"%";
         if(progress>=100){
-            clearInterval(timer); bar.style.display="none";
+            clearInterval(timer); 
+            clearInterval(dotTimer);
+            clearInterval(commandTimer);
+            bar.style.display="none";
+            hackInfo.style.display="none";
             let chance=diff-(software*5);
-            if(Math.random()*100>chance){let reward=Math.floor(diff/3*prestigeBonus); usd+=reward; log("consoleHack","ACCESS "+name+" +$"+reward);}
-            else{let loss=Math.floor(diff/4); usd-=loss; log("consoleHack","TRACE DETECTED -$"+loss);}
+            if(Math.random()*100>chance){
+                let reward=Math.floor(diff/3*prestigeBonus); 
+                usd+=reward; 
+                log("consoleHack","ACCESS "+name+" +$"+reward);
+                // Add signal bonus only if current bonus is depleted
+                if(signalBonus <= 0){
+                    signalBonus = diff;
+                    if(signalBonus > 99) signalBonus = 99;
+                    log("consoleHack","SIGNAL BOOST +"+diff+"% (Decays 1% per second)");
+                    updateSignal();
+                } else {
+                    log("consoleHack","SIGNAL BOOST BLOCKED - Wait for current boost to end");
+                }
+            }
+            else{
+                let loss=Math.floor(diff/4); 
+                usd-=loss; 
+                log("consoleHack","TRACE DETECTED -$"+loss);
+            }
             update(); hacking=false; updateButtons();
         }
     },120);
@@ -227,7 +291,7 @@ function loadServers(){
 
 function buyHacker(){if(usd>=hackerCost){usd-=hackerCost;hackers++; update(); updateButtons();}}
 function upgradeBotSpeed(){if(usd>=botCost){usd-=botCost;botSpeed++; update(); updateButtons();}}
-function prestigeNetwork(){if(usd>=1000000){usd-=1000000;data=0;speed=1000;minerLevel=1;autoMiner=0;connectionLevel=1;firewallLevel=0;hackers=0;botSpeed=1;download=1;software=1;prestigeBonus*=1.5; update(); updateButtons(); log("consoleOps","NETWORK PRESTIGED! Bonus x"+prestigeBonus.toFixed(2));}}
+function prestigeNetwork(){if(usd>=1000000){usd-=1000000;data=0;speed=1000;minerLevel=1;autoMiner=0;connectionLevel=1;firewallLevel=0;hackers=0;botSpeed=1;download=1;software=1;prestigeBonus*=1.5;signalBonus=0; document.getElementById("hackBar").style.display="none"; document.getElementById("hackInfo").style.display="none"; update(); updateButtons(); log("consoleOps","NETWORK PRESTIGED! Bonus x"+prestigeBonus.toFixed(2));}}
 
 function upgradeDownload(){if(usd>=downCost){usd-=downCost;download++;downCost=Math.floor(downCost*2.5);document.getElementById("downCost").innerText=formatNumber(downCost);update();updateButtons();}}
 function upgradeSoftware(){if(usd>=softCost){usd-=softCost;software++;softCost=Math.floor(softCost*2.5);document.getElementById("softCost").innerText=formatNumber(softCost);update();updateButtons();}}
@@ -267,11 +331,18 @@ function update(){
     document.getElementById("softCost").innerText=formatNumber(softCost);
     document.getElementById("hackerCost").innerText=formatNumber(hackerCost);
     document.getElementById("botCost").innerText=formatNumber(botCost);
+    document.getElementById("extractionRate").innerText=formatNumber(speed*prestigeBonus);
+    let autoMinerRate = autoMiner > 0 ? formatNumber(autoMiner*speed*0.4*prestigeBonus) : 0;
+    document.getElementById("autoMinerSpeed").innerText=autoMinerRate;
     updateButtons();
 }
 
 function updatePing(){
     if(!connected){document.getElementById("ping").innerText="---";document.getElementById("latency").innerText="OFFLINE";return;}
+    let basePercent=1+connectionLevel*0.01;
+    if(basePercent>99) basePercent=99;
+    let totalPercent = basePercent + signalBonus;
+    if(totalPercent>99) totalPercent=99;
     let basePing=200-connectionLevel*1.5;if(basePing<20) basePing=20;
     let jitter=Math.random()*30;
     let finalPing=Math.floor(basePing+jitter);
@@ -285,7 +356,7 @@ function saveGame(){
         data, usd, speed, minerLevel, minerCost, autoMiner, autoCost,
         connectionLevel, connCost, firewallLevel, firewallCost,
         autoReconnect, hackers, hackerCost, botSpeed, botCost,
-        download, software, downCost, softCost, prestigeBonus
+        download, software, downCost, softCost, prestigeBonus, signalBonus
     };
     localStorage.setItem("dataMinerSave", JSON.stringify(gameState));
     log("consoleFarm", "SYSTEM: PROGRESS SAVED TO LOCAL STORAGE");
@@ -306,6 +377,7 @@ function loadGame(){
         botCost = state.botCost; download = state.download;
         software = state.software; downCost = state.downCost;
         softCost = state.softCost; prestigeBonus = state.prestigeBonus;
+        signalBonus = state.signalBonus || 0;
         update();
         updateSignal();
         log("consoleFarm", "SYSTEM: PROGRESS LOADED SUCCESSFULLY");
