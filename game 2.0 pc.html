@@ -155,7 +155,7 @@ function toggleAutoSave() {
     if (autoSaveEnabled) {
         if (!autoSaveInterval) {
             autoSaveInterval = setInterval(() => {
-                saveGame();
+                saveGame(true); // silent auto save
                 log("consoleOps", "AUTO SAVE: Progress saved.");
             }, 30000);
         }
@@ -271,6 +271,11 @@ function updateButtons(){
                (b.id === "autoReconnectBtn" && usd >= autoReconnectCost) ||
                (b.id === "prestigeBtn" && usd >= getPrestigeCost())) {
                 b.classList.add("highlight");
+            }
+            
+            // Garante que o botão de prestige fique esmaecido se não tiver recurso ou já estiver no máximo
+            if (b.id === "prestigeBtn" && (prestigeCount >= 35 || usd < getPrestigeCost())) {
+                b.classList.add("dim");
             }
         }
     });
@@ -768,10 +773,12 @@ function loadGameState(state) {
     updateSignal();
 }
 
-function saveGame() {
+function saveGame(silent = false) {
     localStorage.setItem("dataMinerSave", JSON.stringify(getGameState()));
     log("consoleOps", "SYSTEM: PROGRESS SAVED TO LOCAL STORAGE");
-    showNotification("JOGO SALVO!");
+    if (!silent) {
+        showNotification("JOGO SALVO!");
+    }
 }
 
 function loadGame() {
