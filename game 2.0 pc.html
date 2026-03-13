@@ -253,5 +253,107 @@ updateSignal();
 update();
 updateButtons();
 </script>
+/* ======================
+SAVE SYSTEM
+====================== */
+
+function saveGame(){
+
+const save = {
+
+data:data,
+usd:usd,
+speed:speed,
+
+minerLevel:minerLevel,
+minerCost:minerCost,
+
+autoMiner:autoMiner,
+autoCost:autoCost,
+
+connected:connected,
+
+connectionLevel:connectionLevel,
+connCost:connCost,
+
+firewallLevel:firewallLevel,
+firewallCost:firewallCost,
+
+autoReconnect:autoReconnect,
+
+hackers:hackers,
+hackerCost:hackerCost,
+
+botSpeed:botSpeed,
+botCost:botCost,
+
+download:download,
+software:software,
+
+downCost:downCost,
+softCost:softCost,
+
+prestigeBonus:prestigeBonus
+
+};
+
+localStorage.setItem("dataminer_save",JSON.stringify(save));
+
+}
+
+
+/* ======================
+LOAD SYSTEM
+====================== */
+
+function loadGame(){
+
+const save = localStorage.getItem("dataminer_save");
+
+if(save){
+
+const s = JSON.parse(save);
+
+data = s.data ?? data;
+usd = s.usd ?? usd;
+speed = s.speed ?? speed;
+
+minerLevel = s.minerLevel ?? minerLevel;
+minerCost = s.minerCost ?? minerCost;
+
+autoMiner = s.autoMiner ?? autoMiner;
+autoCost = s.autoCost ?? autoCost;
+
+connected = s.connected ?? connected;
+
+connectionLevel = s.connectionLevel ?? connectionLevel;
+connCost = s.connCost ?? connCost;
+
+firewallLevel = s.firewallLevel ?? firewallLevel;
+firewallCost = s.firewallCost ?? firewallCost;
+
+autoReconnect = s.autoReconnect ?? autoReconnect;
+
+hackers = s.hackers ?? hackers;
+hackerCost = s.hackerCost ?? hackerCost;
+
+botSpeed = s.botSpeed ?? botSpeed;
+botCost = s.botCost ?? botCost;
+
+download = s.download ?? download;
+software = s.software ?? software;
+
+downCost = s.downCost ?? downCost;
+softCost = s.softCost ?? softCost;
+
+prestigeBonus = s.prestigeBonus ?? prestigeBonus;
+
+}
+
+update();
+updateSignal();
+
+}
 </body>
 </html>
+
