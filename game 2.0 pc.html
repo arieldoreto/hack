@@ -1,4 +1,3 @@
-xXAriel DoretoXx
 <!DOCTYPE html>
 <html>
 <head>
@@ -24,11 +23,14 @@ button:hover{background:#003300;}
 .highlight{background:#003300;box-shadow:0 0 10px #00ff00;}
 .bar{width:100%;border:1px solid #00ff00;height:20px;margin-top:8px;position:relative;}
 .fill{height:100%;width:0%;background:#00ff00;display:flex;align-items:center;justify-content:center;color:black;font-weight:bold;}
+.save-panel{margin-top:10px;padding:5px;border-top:1px solid #003300;}
+.notification{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:black;border:3px solid #00ff00;color:#00ff00;padding:30px;font-size:24px;font-weight:bold;text-align:center;z-index:1000;box-shadow:0 0 20px #00ff00;animation:fadeInOut 2s ease-in-out;}
+@keyframes fadeInOut{0%{opacity:0;transform:translate(-50%,-50%) scale(0.8);}50%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-50%) scale(0.8);}}
 </style>
 </head>
 <body>
 
-<div class="header">DATA MINER ENGINE • Ariel Doreto</div>
+<div class="header">DATA MINER ENGINE • Created by Ariel Doreto</div>
 <div class="tabs">
 <div class="tab active" onclick="openTab(event,'farm')">DATA FARM</div>
 <div class="tab" onclick="openTab(event,'server')">SERVER HACK</div>
@@ -78,6 +80,11 @@ DATA <span id="dataVal">0</span> | Speed <span id="speedVal">1.00 Kpps</span> | 
 <br>
 PING <span id="ping">---</span> ms | LATENCY <span id="latency">OFFLINE</span>
 
+<div class="save-panel">
+    <button onclick="saveGame()">SAVE GAME</button>
+    <button onclick="loadGame()">LOAD SAVE</button>
+</div>
+
 <script>
 let data=0, usd=0, speed=1000;
 let minerLevel=1, minerCost=100;
@@ -92,11 +99,20 @@ let download=1, software=1, downCost=50, softCost=80;
 let hacking=false;
 let prestigeBonus=1;
 
+function showNotification(message){
+    let notification = document.createElement("div");
+    notification.className = "notification";
+    notification.innerText = message;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 2000);
+}
+
 function updateButtons(){
     let buttons=document.querySelectorAll("button");
     buttons.forEach(b=>{
         if(!connected){
             if(b.id==="connectBtn"){b.classList.remove("dim");b.classList.add("highlight");}
+            else if(b.getAttribute("onclick") === "saveGame()" || b.getAttribute("onclick") === "loadGame()"){b.classList.remove("dim");}
             else{b.classList.add("dim");}
         }else{
             b.classList.remove("dim");b.classList.remove("highlight");
@@ -213,6 +229,9 @@ function buyHacker(){if(usd>=hackerCost){usd-=hackerCost;hackers++; update(); up
 function upgradeBotSpeed(){if(usd>=botCost){usd-=botCost;botSpeed++; update(); updateButtons();}}
 function prestigeNetwork(){if(usd>=1000000){usd-=1000000;data=0;speed=1000;minerLevel=1;autoMiner=0;connectionLevel=1;firewallLevel=0;hackers=0;botSpeed=1;download=1;software=1;prestigeBonus*=1.5; update(); updateButtons(); log("consoleOps","NETWORK PRESTIGED! Bonus x"+prestigeBonus.toFixed(2));}}
 
+function upgradeDownload(){if(usd>=downCost){usd-=downCost;download++;downCost=Math.floor(downCost*2.5);document.getElementById("downCost").innerText=formatNumber(downCost);update();updateButtons();}}
+function upgradeSoftware(){if(usd>=softCost){usd-=softCost;software++;softCost=Math.floor(softCost*2.5);document.getElementById("softCost").innerText=formatNumber(softCost);update();updateButtons();}}
+
 function log(id,text){
     let box=document.getElementById(id); let line=document.createElement("div");
     if(Math.random()<0.18){let err=document.createElement("span"); err.className="error";
@@ -234,7 +253,22 @@ function codeLine(){
 
 function formatNumber(n){if(n>=1e15)return (n/1e15).toFixed(2)+"P";if(n>=1e12)return (n/1e12).toFixed(2)+"T";if(n>=1e9)return (n/1e9).toFixed(2)+"B";if(n>=1e6)return (n/1e6).toFixed(2)+"M";if(n>=1e3)return (n/1e3).toFixed(2)+"K";return Math.floor(n);}
 
-function update(){document.getElementById("dataVal").innerText=formatNumber(data);document.getElementById("usdVal").innerText=usd.toFixed(2);document.getElementById("speedVal").innerText=(speed/1000).toFixed(2)+" Kpps";document.getElementById("hackersVal").innerText=hackers;updateButtons();}
+function update(){
+    document.getElementById("dataVal").innerText=formatNumber(data);
+    document.getElementById("usdVal").innerText=usd.toFixed(2);
+    document.getElementById("speedVal").innerText=(speed/1000).toFixed(2)+" Kpps";
+    document.getElementById("hackersVal").innerText=hackers;
+    document.getElementById("minerCost").innerText=formatNumber(minerCost);
+    document.getElementById("autoCost").innerText=formatNumber(autoCost);
+    document.getElementById("connCost").innerText=formatNumber(connCost);
+    document.getElementById("firewallLv").innerText=firewallLevel;
+    document.getElementById("firewallCost").innerText=formatNumber(firewallCost);
+    document.getElementById("downCost").innerText=formatNumber(downCost);
+    document.getElementById("softCost").innerText=formatNumber(softCost);
+    document.getElementById("hackerCost").innerText=formatNumber(hackerCost);
+    document.getElementById("botCost").innerText=formatNumber(botCost);
+    updateButtons();
+}
 
 function updatePing(){
     if(!connected){document.getElementById("ping").innerText="---";document.getElementById("latency").innerText="OFFLINE";return;}
@@ -246,6 +280,42 @@ function updatePing(){
     document.getElementById("latency").innerText=latencyStatus;
 }
 
+function saveGame(){
+    let gameState = {
+        data, usd, speed, minerLevel, minerCost, autoMiner, autoCost,
+        connectionLevel, connCost, firewallLevel, firewallCost,
+        autoReconnect, hackers, hackerCost, botSpeed, botCost,
+        download, software, downCost, softCost, prestigeBonus
+    };
+    localStorage.setItem("dataMinerSave", JSON.stringify(gameState));
+    log("consoleFarm", "SYSTEM: PROGRESS SAVED TO LOCAL STORAGE");
+    showNotification("JOGO SALVO!");
+}
+
+function loadGame(){
+    let savedData = localStorage.getItem("dataMinerSave");
+    if(savedData){
+        let state = JSON.parse(savedData);
+        data = state.data; usd = state.usd; speed = state.speed;
+        minerLevel = state.minerLevel; minerCost = state.minerCost;
+        autoMiner = state.autoMiner; autoCost = state.autoCost;
+        connectionLevel = state.connectionLevel; connCost = state.connCost;
+        firewallLevel = state.firewallLevel; firewallCost = state.firewallCost;
+        autoReconnect = state.autoReconnect; hackers = state.hackers;
+        hackerCost = state.hackerCost; botSpeed = state.botSpeed;
+        botCost = state.botCost; download = state.download;
+        software = state.software; downCost = state.downCost;
+        softCost = state.softCost; prestigeBonus = state.prestigeBonus;
+        update();
+        updateSignal();
+        log("consoleFarm", "SYSTEM: PROGRESS LOADED SUCCESSFULLY");
+        showNotification("JOGO CARREGADO!");
+    } else {
+        log("consoleFarm", "SYSTEM: NO SAVE DATA FOUND");
+        showNotification("NENHUM SAVE ENCONTRADO!");
+    }
+}
+
 setInterval(updatePing,1500);
 
 loadServers();
@@ -253,109 +323,5 @@ updateSignal();
 update();
 updateButtons();
 </script>
-  
-/* ======================
-SAVE SYSTEM
-====================== */
-
-function saveGame(){
-
-const save = {
-
-data:data,
-usd:usd,
-speed:speed,
-
-minerLevel:minerLevel,
-minerCost:minerCost,
-
-autoMiner:autoMiner,
-autoCost:autoCost,
-
-connected:connected,
-
-connectionLevel:connectionLevel,
-connCost:connCost,
-
-firewallLevel:firewallLevel,
-firewallCost:firewallCost,
-
-autoReconnect:autoReconnect,
-
-hackers:hackers,
-hackerCost:hackerCost,
-
-botSpeed:botSpeed,
-botCost:botCost,
-
-download:download,
-software:software,
-
-downCost:downCost,
-softCost:softCost,
-
-prestigeBonus:prestigeBonus
-
-};
-
-localStorage.setItem("dataminer_save",JSON.stringify(save));
-
-}
-
-
-/* ======================
-LOAD SYSTEM
-====================== */
-
-function loadGame(){
-
-const save = localStorage.getItem("dataminer_save");
-
-if(save){
-
-const s = JSON.parse(save);
-
-data = s.data ?? data;
-usd = s.usd ?? usd;
-speed = s.speed ?? speed;
-
-minerLevel = s.minerLevel ?? minerLevel;
-minerCost = s.minerCost ?? minerCost;
-
-autoMiner = s.autoMiner ?? autoMiner;
-autoCost = s.autoCost ?? autoCost;
-
-connected = s.connected ?? connected;
-
-connectionLevel = s.connectionLevel ?? connectionLevel;
-connCost = s.connCost ?? connCost;
-
-firewallLevel = s.firewallLevel ?? firewallLevel;
-firewallCost = s.firewallCost ?? firewallCost;
-
-autoReconnect = s.autoReconnect ?? autoReconnect;
-
-hackers = s.hackers ?? hackers;
-hackerCost = s.hackerCost ?? hackerCost;
-
-botSpeed = s.botSpeed ?? botSpeed;
-botCost = s.botCost ?? botCost;
-
-download = s.download ?? download;
-software = s.software ?? software;
-
-downCost = s.downCost ?? downCost;
-softCost = s.softCost ?? softCost;
-
-prestigeBonus = s.prestigeBonus ?? prestigeBonus;
-
-}
-
-update();
-updateSignal();
-
-}
 </body>
 </html>
-
-
