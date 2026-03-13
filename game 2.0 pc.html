@@ -828,20 +828,12 @@ updateSignal();
 update();
 setupHoldButtons();
 
-// Clique no console para minerar
+// Clique no console para minerar (sem mudar a cor de fundo)
 document.getElementById('consoleFarm').addEventListener('click', function(e) {
     let selection = window.getSelection().toString();
     if(selection.length === 0) mineData();
 });
-document.getElementById('consoleFarm').addEventListener('mousedown', function(e) {
-    this.style.backgroundColor = '#002200';
-});
-document.getElementById('consoleFarm').addEventListener('mouseup', function(e) {
-    this.style.backgroundColor = '';
-});
-document.getElementById('consoleFarm').addEventListener('mouseleave', function(e) {
-    this.style.backgroundColor = '';
-});
+// Removidos os event listeners que alteravam a cor de fundo ao pressionar
 </script>
 </body>
 </html>
