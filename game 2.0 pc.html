@@ -1,505 +1,257 @@
-XxAriel DoretoxX
+xXAriel DoretoXx
 <!DOCTYPE html>
 <html>
-
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
+<title>DATA MINER ENGINE</title>
 <style>
-
-body{
-background:black;
-color:#00ff00;
-font-family:monospace;
-margin:0;
-text-align:center;
-}
-
-.tabs{
-display:flex;
-border-bottom:2px solid #00ff00;
-}
-
-.tab{
-flex:1;
-padding:10px;
-cursor:pointer;
-}
-
+body{background:black;color:#00ff00;font-family:monospace;margin:0;text-align:center;}
+.tabs{display:flex;border-bottom:2px solid #003300;}
+.tab{flex:1;padding:10px;cursor:pointer;}
 .tab:hover{background:#002200;}
 .active{background:#003300;}
-
-.box{
-display:none;
-width:95%;
-margin:auto;
-border:2px solid #00ff00;
-box-shadow:0 0 10px #00ff00;
-margin-top:10px;
-}
-
+.box{display:none;}
 .box.active{display:block;}
-
-.panel{
-padding:8px;
-border-bottom:1px solid #003300;
-}
-
-.console{
-height:45vh;
-overflow:auto;
-text-align:left;
-padding:10px;
-}
-
-.serverList{
-height:60vh;
-overflow-y:auto;
-padding:10px;
-border-bottom:1px solid #003300;
-}
-
-.serverBtn{
-width:100%;
-background:black;
-color:#00ff00;
-border:1px solid #003300;
-padding:8px;
-margin-bottom:4px;
-cursor:pointer;
-text-align:left;
-}
-
-.serverBtn:hover{
-background:#002200;
-}
-
-.hackPanel{
-height:120px;
-padding:6px;
-}
-
-.hacklog{
-height:100%;
-overflow:auto;
-text-align:left;
-}
-
-.bar{
-width:100%;
-border:1px solid #00ff00;
-height:14px;
-margin-top:5px;
-}
-
-.barfill{
-height:100%;
-width:0%;
-background:#00ff00;
-}
-
-button{
-background:black;
-color:#00ff00;
-border:1px solid #00ff00;
-padding:6px;
-margin:3px;
-cursor:pointer;
-}
-
+.header{padding:6px;border-bottom:1px solid #003300;}
+.panel{padding:8px;border-bottom:1px solid #003300;}
+.console{height:40vh;overflow:auto;text-align:left;padding:10px;border:2px solid #00ff00;margin:10px;}
+.serverBtn{width:100%;background:black;color:#00ff00;border:1px solid #003300;padding:6px;margin-bottom:4px;cursor:pointer;}
+.serverBtn:hover{background:#002200;}
+button{background:black;color:#00ff00;border:1px solid #00ff00;padding:6px;margin:3px;cursor:pointer;}
 button:hover{background:#003300;}
-
+.error{color:#ff3333;font-weight:bold;}
+.dim{opacity:0.35;pointer-events:none;}
+.highlight{background:#003300;box-shadow:0 0 10px #00ff00;}
+.bar{width:100%;border:1px solid #00ff00;height:20px;margin-top:8px;position:relative;}
+.fill{height:100%;width:0%;background:#00ff00;display:flex;align-items:center;justify-content:center;color:black;font-weight:bold;}
 </style>
 </head>
-
 <body>
 
+<div class="header">DATA MINER ENGINE • Ariel Doreto</div>
 <div class="tabs">
-<div class="tab active" onclick="openTab(event,'data')">DATA FARM</div>
+<div class="tab active" onclick="openTab(event,'farm')">DATA FARM</div>
 <div class="tab" onclick="openTab(event,'server')">SERVER HACK</div>
 <div class="tab" onclick="openTab(event,'ops')">DARK OPS</div>
 </div>
 
 <!-- DATA FARM -->
-
-<div id="data" class="box active">
-
+<div id="farm" class="box active">
 <div class="panel">
 <button onclick="mineData()">Mine DATA</button>
-
-<button onclick="upgradeData()">
-Upgrade Miner (<span id="minerCost">100</span> DATA)
-</button>
+<button id="minerBtn" onclick="upgradeMiner()">Upgrade Miner (<span id="minerCost">100</span>)</button>
+<button id="autoBtn" onclick="buyAutoMiner()">Auto Miner (<span id="autoCost">500</span>)</button>
+<br><br>
+<button id="connUpgradeBtn" onclick="upgradeConnection()">Upgrade Connection (<span id="connCost">200</span>)</button>
+<button id="connectBtn" onclick="connectServer()">Establish Connection</button>
+<button id="autoReconnectBtn" onclick="buyAutoReconnect()">Auto Reconnect ($50000)</button>
+<button id="firewallBtn" onclick="upgradeFirewall()">Firewall Lv <span id="firewallLv">0</span> ($<span id="firewallCost">5000</span>)</button>
+<br><br>
+Connection Lv <span id="connLv">1%</span> | Network Signal <span id="signal">░░░░░░░░░░ 1%</span>
 </div>
-
-<div id="consoleData" class="console"></div>
-
+<div id="consoleFarm" class="console"></div>
 </div>
 
 <!-- SERVER HACK -->
-
 <div id="server" class="box">
-
 <div class="panel">
-
-<button onclick="upgradeDownload()">
-Upgrade Download ($<span id="downCost">50</span>)
-</button>
-
-<button onclick="upgradeSoftware()">
-Upgrade Software ($<span id="softCost">80</span>)
-</button>
-
+<button onclick="upgradeDownload()">Upgrade Download ($<span id="downCost">50</span>)</button>
+<button onclick="upgradeSoftware()">Upgrade Software ($<span id="softCost">80</span>)</button>
 </div>
-
-<div id="servers" class="serverList"></div>
-
-<div class="hackPanel">
-<div id="consoleHack" class="hacklog"></div>
-</div>
-
+<div id="servers"></div>
+<div id="hackBar" class="bar" style="display:none"><div id="hackFill" class="fill">HACKING SERV</div></div>
+<div id="consoleHack" class="console"></div>
 </div>
 
 <!-- DARK OPS -->
-
 <div id="ops" class="box">
-
 <div class="panel">
-
-<button onclick="buyHacker()">
-Buy Hacker (<span id="hackerCost">200</span> DATA)
-</button>
-
-<button onclick="upgradeBotSpeed()">
-Upgrade Botnet Speed (<span id="botSpeedCost">150</span> DATA)
-</button>
-
-<button onclick="prestigeNetwork()">
-PRESTIGE NETWORK
-</button>
-
+<button id="buyHackerBtn" onclick="buyHacker()">Buy Hacker ($<span id="hackerCost">200</span>)</button>
+<button id="botNetBtn" onclick="upgradeBotSpeed()">Upgrade Botnet ($<span id="botCost">150</span>)</button>
+<button onclick="prestigeNetwork()">PRESTIGE NETWORK ($1000000)</button>
 </div>
-
 <div id="consoleOps" class="console"></div>
-
 </div>
 
 <br>
-
-DATA <span id="dataVal">0</span> |
-Speed <span id="speed">1 Kpps</span> |
-USD $<span id="usd">0</span> |
-Hackers <span id="hackers">0</span> |
-Quantum Cores <span id="cores">0</span>
+DATA <span id="dataVal">0</span> | Speed <span id="speedVal">1.00 Kpps</span> | USD $<span id="usdVal">0</span> | Hackers <span id="hackersVal">0</span>
+<br>
+PING <span id="ping">---</span> ms | LATENCY <span id="latency">OFFLINE</span>
 
 <script>
+let data=0, usd=0, speed=1000;
+let minerLevel=1, minerCost=100;
+let autoMiner=0, autoCost=500;
+let connected=false;
+let connectionLevel=1, maxConnectionLevel=99, connCost=200;
+let firewallLevel=0, firewallCost=5000;
+let autoReconnect=false;
+let hackers=0, hackerCost=200;
+let botSpeed=1, botCost=150;
+let download=1, software=1, downCost=50, softCost=80;
+let hacking=false;
+let prestigeBonus=1;
 
-let data=0
-let usd=0
-let speed=1
-let hackers=0
+function updateButtons(){
+    let buttons=document.querySelectorAll("button");
+    buttons.forEach(b=>{
+        if(!connected){
+            if(b.id==="connectBtn"){b.classList.remove("dim");b.classList.add("highlight");}
+            else{b.classList.add("dim");}
+        }else{
+            b.classList.remove("dim");b.classList.remove("highlight");
+            if((b.id==="minerBtn" && data>=minerCost) ||
+               (b.id==="autoBtn" && data>=autoCost) ||
+               (b.id==="connUpgradeBtn" && data>=connCost) ||
+               (b.id==="firewallBtn" && usd>=firewallCost) ||
+               (b.id==="buyHackerBtn" && usd>=hackerCost) ||
+               (b.id==="botNetBtn" && usd>=botCost)){
+                   b.classList.add("highlight");
+            }
+        }
+    });
+}
 
-let minerCost=100
-let hackerCost=200
-let botSpeedCost=150
-
-let downloadCost=50
-let softwareCost=80
-
-let downloadSpeed=1
-let software=1
-let botSpeed=1
-
-let prestige=0
-let prestigeBonus=1
-
-let hacking=false
-
-function openTab(e,tab){
-
-document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"))
-e.target.classList.add("active")
-
-document.querySelectorAll(".box").forEach(b=>b.classList.remove("active"))
-document.getElementById(tab).classList.add("active")
-
+function openTab(e,id){
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    e.target.classList.add("active");
+    document.querySelectorAll(".box").forEach(b=>b.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
 }
 
 function mineData(){
-
-data+=speed
-
-log("consoleData",codeLine())
-
-update()
-
+    if(!connected){log("consoleFarm","NETWORK OFFLINE"); return;}
+    data+=speed*prestigeBonus;
+    usd+=speed*0.00001*prestigeBonus;
+    log("consoleFarm",codeLine());
+    update();
+    updateButtons();
 }
 
-function upgradeData(){
-
-if(data>=minerCost){
-
-data-=minerCost
-speed*=1.5
-minerCost=Math.floor(minerCost*1.7)
-
-document.getElementById("minerCost").innerText=minerCost
-
-update()
-
+function upgradeMiner(){
+    if(data>=minerCost){data-=minerCost;minerLevel++;speed+=500;minerCost=Math.floor(minerCost*1.8);
+        document.getElementById("minerCost").innerText=formatNumber(minerCost);update();updateButtons();}
 }
 
-}
-
-function buyHacker(){
-
-if(data>=hackerCost){
-
-data-=hackerCost
-hackers++
-
-hackerCost=Math.floor(hackerCost*1.6)
-
-document.getElementById("hackerCost").innerText=hackerCost
-
-log("consoleOps","BOTNET NODE DEPLOYED")
-
-update()
-
-}
-
-}
-
-function upgradeBotSpeed(){
-
-if(data>=botSpeedCost){
-
-data-=botSpeedCost
-botSpeed*=1.4
-botSpeedCost=Math.floor(botSpeedCost*1.7)
-
-document.getElementById("botSpeedCost").innerText=botSpeedCost
-
-update()
-
-}
-
-}
-
-function upgradeDownload(){
-
-if(usd>=downloadCost){
-
-usd-=downloadCost
-downloadSpeed++
-
-downloadCost=Math.floor(downloadCost*1.5)
-
-document.getElementById("downCost").innerText=downloadCost
-
-}
-
-}
-
-function upgradeSoftware(){
-
-if(usd>=softwareCost){
-
-usd-=softwareCost
-software++
-
-softwareCost=Math.floor(softwareCost*1.6)
-
-document.getElementById("softCost").innerText=softwareCost
-
-}
-
-}
-
-function prestigeNetwork(){
-
-let cores=Math.floor(data/1000000000000)
-
-if(cores<=0){
-alert("Not enough DATA")
-return
-}
-
-prestige+=cores
-prestigeBonus=1+(prestige*0.25)
-
-data=0
-usd=0
-speed=1
-hackers=0
-
-update()
-
-}
-
-function loadServers(){
-
-let list=[
-["USA",65],["BRAZIL",35],["GERMANY",70],["UK",60],
-["FRANCE",58],["CANADA",55],["ITALY",59],["SPAIN",57],
-["PORTUGAL",45],["SWEDEN",62],["NORWAY",64],["FINLAND",66],
-["POLAND",53],["INDIA",50],["CHINA",80],["JAPAN",70],
-["KOREA",68],["AUSTRALIA",54],["SINGAPORE",67],["ARGENTINA",40]
-]
-
-let div=document.getElementById("servers")
-
-list.forEach(s=>{
-
-let btn=document.createElement("button")
-
-btn.className="serverBtn"
-
-btn.innerText=s[0]+" | difficulty "+s[1]+"%"
-
-btn.onclick=function(){
-hackServer(s[0],s[1])
-}
-
-div.appendChild(btn)
-
-})
-
-}
-
-function hackServer(name,diff){
-
-if(hacking)return
-
-hacking=true
-
-let logDiv=document.getElementById("consoleHack")
-
-logDiv.innerHTML=""
-
-let bar=document.createElement("div")
-bar.className="bar"
-
-let fill=document.createElement("div")
-fill.className="barfill"
-
-bar.appendChild(fill)
-logDiv.appendChild(bar)
-
-let p=0
-
-let timer=setInterval(()=>{
-
-p+=downloadSpeed*3
-fill.style.width=p+"%"
-
-if(p>=100){
-
-clearInterval(timer)
-
-let risk=diff-(software*5)
-
-if(Math.random()*100>risk){
-
-let reward=Math.floor(diff/3)
-
-usd+=reward
-
-logDiv.innerHTML+="<div>ACCESS "+name+" +$"+reward+"</div>"
-
-}else{
-
-usd-=5
-
-logDiv.innerHTML+="<div>TRACE DETECTED</div>"
-
-}
-
-update()
-
-setTimeout(()=>{hacking=false},1000)
-
-}
-
-},120)
-
-}
-
-function log(id,text){
-
-let box=document.getElementById(id)
-
-let line=document.createElement("div")
-
-box.appendChild(line)
-
-let i=0
-
-let typing=setInterval(()=>{
-
-line.textContent+=text[i]
-i++
-
-box.scrollTop=box.scrollHeight
-
-if(i>=text.length){
-clearInterval(typing)
-}
-
-},10)
-
-}
-
-function codeLine(){
-
-let codes=[
-
-"nmap -sS 10.0.0.0/24",
-"hydra -l admin -P passwords.txt ssh",
-"deploying exploit buffer",
-"injecting reverse shell",
-"packet flood initiated",
-"privilege escalation running",
-"botnet packet mining",
-"scanning vulnerabilities"
-
-]
-
-return codes[Math.floor(Math.random()*codes.length)]
-
+function buyAutoMiner(){
+    if(data>=autoCost){data-=autoCost;autoMiner++;autoCost=Math.floor(autoCost*3);
+        document.getElementById("autoCost").innerText=formatNumber(autoCost);updateButtons();}
 }
 
 setInterval(()=>{
+    if(autoMiner>0 && connected){
+        let mined=autoMiner*speed*0.4*prestigeBonus;
+        data+=mined;usd+=mined*0.00001*prestigeBonus;
+        log("consoleFarm",codeLine());update();updateButtons();
+    }
+},1200);
 
-if(hackers>0){
-
-let mining=hackers*speed*botSpeed
-
-data+=mining
-
-log("consoleOps","botnet["+hackers+"] mining "+Math.floor(mining))
-
-update()
-
+function connectServer(){
+    if(connected) return; connected=true; log("consoleFarm","NETWORK CONNECTED"); updateSignal(); updateButtons();
 }
 
-},1000)
-
-function update(){
-
-document.getElementById("dataVal").innerText=Math.floor(data)
-document.getElementById("usd").innerText=Math.floor(usd)
-document.getElementById("speed").innerText=speed.toFixed(2)
-document.getElementById("hackers").innerText=hackers
-document.getElementById("cores").innerText=prestige
-
+function upgradeConnection(){
+    if(connectionLevel>=maxConnectionLevel) return;
+    if(data>=connCost){data-=connCost;connectionLevel++; connCost=Math.floor(connCost*1.6);
+        document.getElementById("connCost").innerText=formatNumber(connCost); updateSignal(); update(); updateButtons();}
 }
 
-loadServers()
+function updateSignal(){
+    let percent=1+connectionLevel*0.01; if(percent>99) percent=99;
+    let bars=Math.floor(percent/10); let signal=""; for(let i=0;i<10;i++){signal+=i<bars?"█":"░";}
+    document.getElementById("signal").innerText="Network Signal "+signal+" "+percent.toFixed(2)+"%";
+    document.getElementById("connLv").innerText=percent.toFixed(2)+"%";
+}
 
+function buyAutoReconnect(){if(usd>=50000){usd-=50000;autoReconnect=true; log("consoleFarm","AUTO RECONNECT ENABLED"); update(); updateButtons();}}
+
+function upgradeFirewall(){if(usd>=firewallCost){usd-=firewallCost;firewallLevel++;firewallCost=Math.floor(firewallCost*2);
+document.getElementById("firewallLv").innerText=firewallLevel;document.getElementById("firewallCost").innerText=formatNumber(firewallCost); updateButtons();}}
+
+setInterval(()=>{
+    if(!connected) return;
+    let signalPercent=connectionLevel*0.01+1;
+    if(signalPercent>99) signalPercent=99;
+    let dropChance=100-signalPercent-firewallLevel*2;
+    if(dropChance<1) dropChance=1;
+    if(Math.random()*100<dropChance){
+        connected=false; log("consoleFarm","CONNECTION LOST"); updateButtons();
+        if(autoReconnect){setTimeout(()=>{connected=true; log("consoleFarm","AUTO RECONNECTED"); updateSignal(); updateButtons();},2000);}
+    }
+},5000);
+
+function hackServer(name,diff){
+    if(!connected){log("consoleHack","NETWORK OFFLINE"); return;}
+    if(hacking) return;
+    hacking=true;
+    let bar=document.getElementById("hackBar"); let fill=document.getElementById("hackFill");
+    bar.style.display="block"; fill.style.width="0%"; fill.innerText="HACKING SERV";
+    let progress=0; let speedHack=3+download;
+    let timer=setInterval(()=>{
+        progress+=speedHack;
+        fill.style.width=progress+"%";
+        if(progress>=100){
+            clearInterval(timer); bar.style.display="none";
+            let chance=diff-(software*5);
+            if(Math.random()*100>chance){let reward=Math.floor(diff/3*prestigeBonus); usd+=reward; log("consoleHack","ACCESS "+name+" +$"+reward);}
+            else{let loss=Math.floor(diff/4); usd-=loss; log("consoleHack","TRACE DETECTED -$"+loss);}
+            update(); hacking=false; updateButtons();
+        }
+    },120);
+}
+
+function loadServers(){
+    let list=["USA","BRAZIL","GERMANY","UK","FRANCE","CANADA","JAPAN","CHINA"];
+    let div=document.getElementById("servers");
+    list.forEach(s=>{
+        let btn=document.createElement("button"); btn.className="serverBtn"; btn.innerText="Hack "+s;
+        btn.onclick=function(){hackServer(s,60);}; div.appendChild(btn);
+    });
+}
+
+function buyHacker(){if(usd>=hackerCost){usd-=hackerCost;hackers++; update(); updateButtons();}}
+function upgradeBotSpeed(){if(usd>=botCost){usd-=botCost;botSpeed++; update(); updateButtons();}}
+function prestigeNetwork(){if(usd>=1000000){usd-=1000000;data=0;speed=1000;minerLevel=1;autoMiner=0;connectionLevel=1;firewallLevel=0;hackers=0;botSpeed=1;download=1;software=1;prestigeBonus*=1.5; update(); updateButtons(); log("consoleOps","NETWORK PRESTIGED! Bonus x"+prestigeBonus.toFixed(2));}}
+
+function log(id,text){
+    let box=document.getElementById(id); let line=document.createElement("div");
+    if(Math.random()<0.18){let err=document.createElement("span"); err.className="error";
+    let types=["ERROR","FAILED","ACCESS DENIED","TIMEOUT"]; err.textContent=types[Math.floor(Math.random()*types.length)]+" -> "; line.appendChild(err);}
+    line.innerHTML+=text; box.appendChild(line); box.scrollTop=box.scrollHeight;
+}
+
+function codeLine(){
+    let codes=[
+        "#include <iostream>\nusing namespace std;\nint main(){ cout<<\"Mining Data\"<<endl; return 0; }",
+        "import socket\ns=socket.socket()\ns.connect(('192.168.1.1',22))",
+        "for(i=0;i<100;i++){send_packet(i);}",
+        "void exploit(){cout<<\"Exploit sent\";}",
+        "class Miner{public:void run(){compute();}}",
+        "def hack_server():\n\tprint('Attack')"
+    ];
+    return codes[Math.floor(Math.random()*codes.length)];
+}
+
+function formatNumber(n){if(n>=1e15)return (n/1e15).toFixed(2)+"P";if(n>=1e12)return (n/1e12).toFixed(2)+"T";if(n>=1e9)return (n/1e9).toFixed(2)+"B";if(n>=1e6)return (n/1e6).toFixed(2)+"M";if(n>=1e3)return (n/1e3).toFixed(2)+"K";return Math.floor(n);}
+
+function update(){document.getElementById("dataVal").innerText=formatNumber(data);document.getElementById("usdVal").innerText=usd.toFixed(2);document.getElementById("speedVal").innerText=(speed/1000).toFixed(2)+" Kpps";document.getElementById("hackersVal").innerText=hackers;updateButtons();}
+
+function updatePing(){
+    if(!connected){document.getElementById("ping").innerText="---";document.getElementById("latency").innerText="OFFLINE";return;}
+    let basePing=200-connectionLevel*1.5;if(basePing<20) basePing=20;
+    let jitter=Math.random()*30;
+    let finalPing=Math.floor(basePing+jitter);
+    document.getElementById("ping").innerText=finalPing;
+    let latencyStatus=finalPing<50?"EXCELLENT":finalPing<100?"GOOD":finalPing<150?"FAIR":"POOR";
+    document.getElementById("latency").innerText=latencyStatus;
+}
+
+setInterval(updatePing,1500);
+
+loadServers();
+updateSignal();
+update();
+updateButtons();
 </script>
-
 </body>
 </html>
-```
-
