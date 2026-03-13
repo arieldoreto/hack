@@ -29,8 +29,6 @@ button:hover{background:#003300;}
 .notification{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:black;border:3px solid #00ff00;color:#00ff00;padding:30px;font-size:24px;font-weight:bold;text-align:center;z-index:1000;box-shadow:0 0 20px #00ff00;animation:fadeInOut 2s ease-in-out;}
 @keyframes fadeInOut{0%{opacity:0;transform:translate(-50%,-50%) scale(0.8);}50%{opacity:1;transform:translate(-50%,-50%) scale(1);}100%{opacity:0;transform:translate(-50%,-50%) scale(0.8);}}
 .info-line{margin:2px 0; clear:both;}
-.mine-center{text-align:center; margin:10px 0;}
-.mine-center button{font-size:1.2em; padding:10px 20px;}
 </style>
 </head>
 <body>
@@ -58,10 +56,7 @@ button:hover{background:#003300;}
 <div class="info-line">Connection Lv <span id="connLv">1%</span> | Network Signal <span id="signal"></span></div>
 <div class="info-line">Firewall Securitynet <span id="firewallBar">▱▱▱▱▱▱▱▱▱▱</span> <span id="firewallLvBar">0</span>/99</div>
 </div>
-<!-- Botão Mine Data centralizado -->
-<div class="mine-center">
-    <button onclick="mineData()">Mine Data or Tap to Mine</button>
-</div>
+<!-- Console movido para cima (sem o botão) -->
 <div id="consoleFarm" class="console"></div>
 </div>
 
@@ -100,6 +95,10 @@ PING <span id="ping">---</span> ms | LATENCY <span id="latency">OFFLINE</span>
 </div>
 
 <script>
+// CÓDIGO JAVASCRIPT IDÊNTICO AO ANTERIOR, MANTIDO PARA REFERÊNCIA
+// (O conteúdo do script permanece inalterado em relação à última versão fornecida)
+// Por brevidade, mantemos o script completo, mas aqui está o resumo: todas as funções e lógicas são as mesmas.
+
 let data=0, usd=0, speed=1000;
 let minerLevel=1, minerCost=100;
 let autoMiner=0, autoCost=500;
@@ -125,7 +124,6 @@ let disconnectTimeout = null;
 const firewallNames = ["Basic", "Standard", "Enhanced", "Advanced", "Elite", "Ultimate", "Godlike", "Omnipotent"];
 const FIREWALL_MAX_LEVEL = 99;
 
-// Mapa para armazenar os intervals de cada botão (hold)
 const holdIntervals = {};
 
 function showNotification(message){
@@ -202,7 +200,6 @@ function mineData(){
     updateButtons();
 }
 
-// Funções de upgrade modificadas para retornar boolean
 function upgradeMiner(){
     if(data>=minerCost){
         data-=minerCost;
@@ -356,10 +353,8 @@ function updateSignal(){
     let totalPercent = basePercent + signalBonus;
     if (totalPercent > 99) totalPercent = 99;
     
-    // Atualiza Connection Lv (apenas base, sem bônus)
     document.getElementById("connLv").innerText = basePercent.toFixed(2) + "%";
     
-    // Atualiza Network Signal (total com barra)
     const levels = ["▁", "▂", "▃", "▄", "▅"];
     let signalStr = "";
     for (let i = 0; i < 5; i++) {
@@ -478,7 +473,6 @@ function hackServer(name,diff){
                 let reward=Math.floor(diff/3*prestigeBonus); 
                 usd+=reward;
                 
-                // Simular hack bem-sucedido com linhas técnicas
                 let successLines = [
                     "> Scanning ports... 192.168." + Math.floor(Math.random()*255) + "." + Math.floor(Math.random()*255) + ":22 open",
                     "> Exploiting vulnerability... CVE-202" + Math.floor(Math.random()*9) + "-" + Math.floor(Math.random()*9000+1000),
@@ -507,7 +501,6 @@ function hackServer(name,diff){
             else{
                 let loss=Math.floor(diff/4); 
                 usd-=loss;
-                // Simular invasão detectada com várias linhas
                 let hackLines = [
                     "> INTRUSION ALERT",
                     "> TRACING BACK...",
@@ -647,13 +640,12 @@ function codeLine(){
     return codes[Math.floor(Math.random() * codes.length)];
 }
 
-// Função formatNumber: inteiro até 1M, depois abrevia com M, B, T, P (sem decimais)
 function formatNumber(n){
     if(n >= 1e15) return Math.floor(n / 1e15) + "P";
     if(n >= 1e12) return Math.floor(n / 1e12) + "T";
     if(n >= 1e9) return Math.floor(n / 1e9) + "B";
     if(n >= 1e6) return Math.floor(n / 1e6) + "M";
-    return Math.floor(n).toString(); // inteiro sem abreviação
+    return Math.floor(n).toString();
 }
 
 function updateAutoMinerButtonText() {
@@ -667,7 +659,7 @@ function updateAutoMinerButtonText() {
 
 function update(){
     document.getElementById("dataVal").innerText=formatNumber(data);
-    document.getElementById("usdVal").innerText=formatNumber(usd); // agora usa formatNumber
+    document.getElementById("usdVal").innerText=formatNumber(usd);
     
     let extractionRate = speed * prestigeBonus;
     let autoMinerRate = autoMiner > 0 ? autoMiner * autoMinerPower * autoMinerSpeed * prestigeBonus * (1000/1200) : 0;
@@ -759,22 +751,14 @@ function loadGame(){
     }
 }
 
-// Função auxiliar para iniciar o hold em um botão
 function startHold(buttonId, upgradeFunction) {
-    if (holdIntervals[buttonId]) return; // já está em hold
-    
-    // Executa uma vez imediatamente
+    if (holdIntervals[buttonId]) return;
     let success = upgradeFunction();
-    if (!success) return; // se não conseguir, não inicia o intervalo
-    
-    // Inicia o intervalo
+    if (!success) return;
     holdIntervals[buttonId] = setInterval(() => {
         let ok = upgradeFunction();
-        if (!ok) {
-            // Se não conseguir mais, para o intervalo
-            stopHold(buttonId);
-        }
-    }, 100); // a cada 100ms
+        if (!ok) stopHold(buttonId);
+    }, 100);
 }
 
 function stopHold(buttonId) {
@@ -784,7 +768,6 @@ function stopHold(buttonId) {
     }
 }
 
-// Adiciona eventos de hold a todos os botões de upgrade
 function setupHoldButtons() {
     const upgradeButtons = [
         { id: 'minerBtn', func: upgradeMiner },
@@ -801,25 +784,16 @@ function setupHoldButtons() {
     upgradeButtons.forEach(item => {
         let btn = document.getElementById(item.id);
         if (!btn) return;
-        
-        // Mousedown - inicia o hold
         btn.addEventListener('mousedown', (e) => {
-            e.preventDefault(); // evita seleção de texto
+            e.preventDefault();
             startHold(item.id, item.func);
         });
-        
-        // Mouseup e mouseleave - param o hold
         btn.addEventListener('mouseup', () => stopHold(item.id));
         btn.addEventListener('mouseleave', () => stopHold(item.id));
-        
-        // Também para quando o mouse sai do botão enquanto pressionado
         btn.addEventListener('mouseout', () => stopHold(item.id));
     });
-    
-    // Para o botão de mineração, não queremos hold, então não adicionamos
 }
 
-// Chama a função após o carregamento
 window.addEventListener('load', () => {
     setupHoldButtons();
 });
@@ -831,16 +805,15 @@ updateSignal();
 update();
 updateButtons();
 
-// Adiciona evento de clique no consoleFarm para minerar dados
+// Evento de clique no consoleFarm para minerar dados
 document.getElementById('consoleFarm').addEventListener('click', function(e) {
-    // Se houver seleção de texto, não minera (para permitir copiar)
     let selection = window.getSelection().toString();
     if (selection.length === 0) {
         mineData();
     }
 });
 
-// Também adiciona um efeito visual de clique
+// Efeitos visuais no console
 document.getElementById('consoleFarm').addEventListener('mousedown', function(e) {
     this.style.backgroundColor = '#002200';
 });
