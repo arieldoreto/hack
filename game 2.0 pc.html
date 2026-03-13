@@ -13,7 +13,8 @@ body{background:black;color:#00ff00;font-family:monospace;margin:0;text-align:ce
 .box.active{display:block;}
 .header{padding:6px;border-bottom:1px solid #003300;}
 .panel{padding:8px;border-bottom:1px solid #003300;}
-.console{height:40vh;overflow:auto;text-align:left;padding:10px;border:2px solid #00ff00;margin:10px;}
+.console{height:30vh;overflow:auto;text-align:left;padding:10px;border:2px solid #00ff00;margin:10px;cursor:pointer;}
+.console:hover{background:#001100;}
 .serverBtn{width:100%;background:black;color:#00ff00;border:1px solid #003300;padding:6px;margin-bottom:4px;cursor:pointer;}
 .serverBtn:hover{background:#002200;}
 button{background:black;color:#00ff00;border:1px solid #00ff00;padding:6px;margin:3px;cursor:pointer;}
@@ -117,7 +118,7 @@ let intervalCost = 2000;
 let disconnectTimeout = null;
 
 const firewallNames = ["Basic", "Standard", "Enhanced", "Advanced", "Elite", "Ultimate", "Godlike", "Omnipotent"];
-const FIREWALL_MAX_LEVEL = 99; // ALTERADO PARA 99
+const FIREWALL_MAX_LEVEL = 99;
 
 function showNotification(message){
     let notification = document.createElement("div");
@@ -249,13 +250,16 @@ function upgradeConnection(){
 }
 
 function updateSignal(){
-    let basePercent=1+connectionLevel*0.01; 
-    if(basePercent>99) basePercent=99;
+    let basePercent = 1 + connectionLevel * 0.01;
+    if (basePercent > 99) basePercent = 99;
     let totalPercent = basePercent + signalBonus;
-    if(totalPercent>99) totalPercent=99;
+    if (totalPercent > 99) totalPercent = 99;
     
+    // Atualiza Connection Lv (apenas base, sem bônus)
+    document.getElementById("connLv").innerText = basePercent.toFixed(2) + "%";
+    
+    // Atualiza Network Signal (total com barra)
     const levels = ["▁", "▂", "▃", "▄", "▅"];
-    
     let signalStr = "";
     for (let i = 0; i < 5; i++) {
         let intensity = Math.floor((totalPercent - (4 - i) * 20) / 20);
@@ -263,16 +267,13 @@ function updateSignal(){
         if (intensity > 4) intensity = 4;
         signalStr += levels[intensity];
     }
-    
     document.getElementById("signal").innerText = signalStr + " " + totalPercent.toFixed(2) + "%";
-    document.getElementById("connLv").innerText = totalPercent.toFixed(2) + "%";
 }
 
 function updateFirewallBar() {
-    // Calcula a porcentagem com base no novo máximo de 99
     let percent = (firewallLevel / FIREWALL_MAX_LEVEL) * 100;
     if (percent > 100) percent = 100;
-    let bars = Math.floor(percent / 10); // 10 caracteres na barra
+    let bars = Math.floor(percent / 10);
     let barStr = "";
     for (let i = 0; i < 10; i++) {
         barStr += i < bars ? "▰" : "▱";
@@ -408,8 +409,25 @@ function hackServer(name,diff){
             let chance=diff-(software*5);
             if(Math.random()*100>chance){
                 let reward=Math.floor(diff/3*prestigeBonus); 
-                usd+=reward; 
-                log("consoleHack","ACCESS "+name+" +$"+reward);
+                usd+=reward;
+                
+                // Simular hack bem-sucedido com linhas técnicas
+                let successLines = [
+                    "> Scanning ports... 192.168." + Math.floor(Math.random()*255) + "." + Math.floor(Math.random()*255) + ":22 open",
+                    "> Exploiting vulnerability... CVE-202" + Math.floor(Math.random()*9) + "-" + Math.floor(Math.random()*9000+1000),
+                    "> Bypassing firewall... " + Math.floor(Math.random()*40+60) + "% complete",
+                    "> Extracting data packets... " + (Math.random()*5).toFixed(1) + " MB transferred",
+                    "> Root access granted"
+                ];
+                successLines.forEach((line, index) => {
+                    setTimeout(() => {
+                        log("consoleHack", line);
+                    }, index * 150);
+                });
+                setTimeout(() => {
+                    log("consoleHack", "ACCESS " + name + " +$" + reward);
+                }, successLines.length * 150 + 200);
+                
                 if(signalBonus <= 0){
                     signalBonus = diff;
                     if(signalBonus > 99) signalBonus = 99;
@@ -421,8 +439,23 @@ function hackServer(name,diff){
             }
             else{
                 let loss=Math.floor(diff/4); 
-                usd-=loss; 
-                log("consoleHack","TRACE DETECTED -$"+loss);
+                usd-=loss;
+                // Simular invasão detectada com várias linhas
+                let hackLines = [
+                    "> INTRUSION ALERT",
+                    "> TRACING BACK...",
+                    "> FIREWALL BREACH DETECTED",
+                    "> COUNTERMEASURES DEPLOYED",
+                    "> CONNECTION TERMINATED"
+                ];
+                hackLines.forEach((line, index) => {
+                    setTimeout(() => {
+                        log("consoleHack", line);
+                    }, index * 150);
+                });
+                setTimeout(() => {
+                    log("consoleHack", "INVASÃO DETECTADA - QUEBRA DE SEGURANÇA -$" + loss);
+                }, hackLines.length * 150 + 200);
             }
             update(); hacking=false; updateButtons();
         }
@@ -430,11 +463,30 @@ function hackServer(name,diff){
 }
 
 function loadServers(){
-    let list=["USA","BRAZIL","GERMANY","UK","FRANCE","CANADA","JAPAN","CHINA"];
-    let div=document.getElementById("servers");
-    list.forEach(s=>{
-        let btn=document.createElement("button"); btn.className="serverBtn"; btn.innerText="Hack "+s;
-        btn.onclick=function(){hackServer(s,60);}; div.appendChild(btn);
+    // Lista expandida com dificuldades ajustadas
+    const servers = [
+        { name: "USA", diff: 80 },
+        { name: "CHINA", diff: 75 },
+        { name: "RUSSIA", diff: 70 },
+        { name: "ISRAEL", diff: 70 },
+        { name: "UK", diff: 65 },
+        { name: "SOUTH KOREA", diff: 65 },
+        { name: "GERMANY", diff: 60 },
+        { name: "JAPAN", diff: 60 },
+        { name: "FRANCE", diff: 55 },
+        { name: "INDIA", diff: 50 },
+        { name: "CANADA", diff: 50 },
+        { name: "BRAZIL", diff: 40 }
+    ];
+    
+    let div = document.getElementById("servers");
+    div.innerHTML = ''; // Limpa antes de recriar
+    servers.forEach(s => {
+        let btn = document.createElement("button");
+        btn.className = "serverBtn";
+        btn.innerText = "Hack " + s.name;
+        btn.onclick = function() { hackServer(s.name, s.diff); };
+        div.appendChild(btn);
     });
 }
 
@@ -485,15 +537,27 @@ function log(id,text){
 }
 
 function codeLine(){
-    let codes=[
-        "#include <iostream>\nusing namespace std;\nint main(){ cout<<\"Mining Data\"<<endl; return 0; }",
-        "import socket\ns=socket.socket()\ns.connect(('192.168.1.1',22))",
-        "for(i=0;i<100;i++){send_packet(i);}",
-        "void exploit(){cout<<\"Exploit sent\";}",
-        "class Miner{public:void run(){compute();}}",
-        "def hack_server():\n\tprint('Attack')"
+    let codes = [
+        "void mine() { for(int i=0;i<rate;i++) buffer.push_back(i*0xdeadbeef); }",
+        "def mine(rate): return [i*0xdeadbeef for i in range(rate)]",
+        "while(data>0) { data -= miner.speed; usd += miner.profit; }",
+        "if(connected) { socket.send(payload); response = socket.recv(); }",
+        "for(i=0;i<100;i++) { packet[i] = rand() % 256; send_packet(packet); }",
+        "exploit = '\\x90'*16 + shellcode; target.send(exploit);",
+        "miner_thread = threading.Thread(target=mine, args=(rate,)); miner_thread.start();",
+        "class Miner: def __init__(self): self.speed = 1000; self.profit = 0.01;",
+        "auto data = std::async(std::launch::async, mine, rate);",
+        "while(usd < target) { data += mine(); usd += profit(); }",
+        "int main() { std::cout << \"Mining...\" << std::endl; return 0; }",
+        "const int blocks = mine(rate); std::cout << \"Mined \" << blocks << \" blocks\" << std::endl;",
+        "function mine(rate) { let data = 0; for(let i=0;i<rate;i++) data+=i; return data; }",
+        "with open('data.bin','wb') as f: f.write(bytes([i%256 for i in range(rate)]));",
+        "system(\"miner --rate \" + std::to_string(rate) + \" > data.dat\");",
+        "Process process = Runtime.getRuntime().exec(\"miner \"+rate);",
+        "Invoke-WebRequest -Uri http://miner.local/mine?rate=$rate -OutFile data.txt",
+        "mine() { for (int i = 0; i < rate; i++) { data += i * 0xdeadbeef; } }"
     ];
-    return codes[Math.floor(Math.random()*codes.length)];
+    return codes[Math.floor(Math.random() * codes.length)];
 }
 
 function formatNumber(n){
@@ -614,6 +678,26 @@ loadServers();
 updateSignal();
 update();
 updateButtons();
+
+// Adiciona evento de clique no consoleFarm para minerar dados
+document.getElementById('consoleFarm').addEventListener('click', function(e) {
+    // Se houver seleção de texto, não minera (para permitir copiar)
+    let selection = window.getSelection().toString();
+    if (selection.length === 0) {
+        mineData();
+    }
+});
+
+// Também adiciona um efeito visual de clique
+document.getElementById('consoleFarm').addEventListener('mousedown', function(e) {
+    this.style.backgroundColor = '#002200';
+});
+document.getElementById('consoleFarm').addEventListener('mouseup', function(e) {
+    this.style.backgroundColor = '';
+});
+document.getElementById('consoleFarm').addEventListener('mouseleave', function(e) {
+    this.style.backgroundColor = '';
+});
 </script>
 </body>
 </html>
