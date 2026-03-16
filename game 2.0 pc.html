@@ -281,8 +281,9 @@ function updateButtons(){
     });
 }
 
+// Sinal: cada nível de conexão dá 0.4% (já alterado anteriormente)
 function updateSignal(){
-    let basePercent = 1 + connectionLevel * 0.01;
+    let basePercent = connectionLevel * 0.4;
     if(basePercent > 99) basePercent = 99;
     let totalPercent = basePercent + signalBonus;
     if(totalPercent > 99) totalPercent = 99;
@@ -296,6 +297,7 @@ function updateSignal(){
         signalStr += levels[intensity];
     }
     document.getElementById("signal").innerText = signalStr + " " + totalPercent.toFixed(2) + "%";
+    return totalPercent; // retorna para uso em outras funções
 }
 
 function updateFirewallBar() {
@@ -516,9 +518,12 @@ function connectServer(){
     scheduleDisconnectCheck();
 }
 
-function getDisconnectInterval() {
-    let base = 10 + checkIntervalBonus + (firewallLevel * 0.5);
-    if(base > 30) base = 30;
+// *** NOVA FUNÇÃO: calcula o intervalo de desconexão com base no sinal atual ***
+function getDisconnectInterval(signalTotal) {
+    // Fórmula: 10s base + bônus do check interval + (firewallLevel * 0.5) + (signalTotal * 0.2)
+    let base = 10 + checkIntervalBonus + (firewallLevel * 0.5) + (signalTotal * 0.2);
+    // Limite máximo de 60 segundos para não ficar eterno
+    if(base > 60) base = 60;
     if(base < 1) base = 1;
     return base * 1000;
 }
@@ -526,16 +531,16 @@ function getDisconnectInterval() {
 function scheduleDisconnectCheck() {
     if(disconnectTimeout) clearTimeout(disconnectTimeout);
     if(!connected) return;
-    disconnectTimeout = setTimeout(checkDisconnect, getDisconnectInterval());
+    // Calcula o sinal atual chamando updateSignal (que também atualiza a interface)
+    let signalTotal = updateSignal(); // updateSignal retorna o totalPercent
+    disconnectTimeout = setTimeout(() => checkDisconnect(signalTotal), getDisconnectInterval(signalTotal));
 }
 
-function checkDisconnect() {
+function checkDisconnect(previousSignalTotal) {
     if(!connected) return;
-    let basePercent = 1 + connectionLevel * 0.01;
-    if(basePercent > 99) basePercent = 99;
-    let totalPercent = basePercent + signalBonus;
-    if(totalPercent > 99) totalPercent = 99;
-    let dropChance = 100 - totalPercent - firewallLevel * 2;
+    // Recalcula o sinal atual (pode ter mudado desde o agendamento)
+    let signalTotal = updateSignal();
+    let dropChance = 100 - signalTotal - firewallLevel * 2;
     if(dropChance < 1) dropChance = 1;
     
     if(Math.random() * 100 < dropChance) {
@@ -607,8 +612,9 @@ function hackServer(name, diff) {
             clearInterval(commandTimer);
             bar.style.display = "none";
             hackInfo.style.display = "none";
-            let chance = diff - (software * 5);
-            if(Math.random() * 100 > chance) {
+            // Renomeado para clareza
+            let threshold = diff - (software * 5);
+            if(Math.random() * 100 > threshold) {
                 let reward = Math.floor(diff / 3 * prestigeBonus);
                 usd += reward;
                 
@@ -723,6 +729,9 @@ function prestigeNetwork() {
         download = 1;
         software = 1;
         signalBonus = 0;
+        // Reseta autoReconnect
+        autoReconnect = false;
+        autoReconnectCost = 50000;
         
         // Incrementa prestige
         prestigeCount++;
@@ -903,7 +912,7 @@ function updatePing() {
         document.getElementById("latency").innerText = "OFFLINE";
         return;
     }
-    let basePercent = 1 + connectionLevel * 0.01;
+    let basePercent = connectionLevel * 0.4;
     if(basePercent > 99) basePercent = 99;
     let totalPercent = basePercent + signalBonus;
     if(totalPercent > 99) totalPercent = 99;
