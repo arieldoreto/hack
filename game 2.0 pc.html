@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DATA MINER ENGINE</title>
 <style>
-/* (mesmo CSS, inalterado) */
+/* ========== ESTILOS GLOBAIS ========== */
 body{background:black;color:#00ff00;font-family:monospace;margin:0;text-align:center;}
 .tabs{display:flex;border-bottom:2px solid #003300;}
 .tab{flex:1;padding:10px;cursor:pointer;}
@@ -15,9 +15,45 @@ body{background:black;color:#00ff00;font-family:monospace;margin:0;text-align:ce
 .header{padding:6px;border-bottom:1px solid #003300;}
 .panel{padding:8px;border-bottom:1px solid #003300;}
 .console{height:30vh;overflow:auto;text-align:left;padding:10px;border:2px solid #00ff00;margin:10px 0;cursor:pointer;background:black;}
-.serverBtn{width:100%;background:black;color:#00ff00;border:1px solid #003300;padding:6px;margin-bottom:4px;cursor:pointer;}
+
+/* Container da lista de servidores - mesma dimensão e estilo da caixa de log */
+.servers-container{
+    height:30vh;
+    overflow:auto;
+    text-align:left;
+    padding:10px;
+    border:2px solid #00ff00;
+    margin:10px 0;
+    background:black;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-content:flex-start;
+}
+
+.serverBtn{
+    width:calc(25% - 8px);
+    background:black;
+    color:#00ff00;
+    border:1px solid #003300;
+    padding:6px;
+    margin:0;
+    cursor:pointer;
+    font-family:monospace;
+    font-size:0.9em;
+    text-align:center;
+}
 .serverBtn:hover{background:#002200;}
-button{background:black;color:#00ff00;border:1px solid #00ff00;padding:6px;margin:3px;cursor:pointer;}
+
+/* Demais botões */
+button{
+    background:black;
+    color:#00ff00;
+    border:1px solid #00ff00;
+    padding:6px;
+    margin:3px;
+    cursor:pointer;
+}
 button:hover{background:#003300;}
 .error{color:#ff3333;font-weight:bold;}
 .dim{opacity:0.35;pointer-events:none;}
@@ -76,7 +112,8 @@ button:hover{background:#003300;}
 <button onclick="upgradeDownload()">Upgrade Download ($<span id="downCost">50</span>)</button>
 <button onclick="upgradeSoftware()">Upgrade Software ($<span id="softCost">80</span>)</button>
 </div>
-<div id="servers"></div>
+<!-- NOVA CAIXA PARA LISTA DE SERVIDORES (mesmas dimensões da caixa de log) -->
+<div id="servers" class="servers-container"></div>
 <div id="hackBar" class="bar" style="display:none"><div id="hackFill" class="fill"></div></div>
 <div id="hackInfo" class="hack-info" style="display:none;">HACKING SERVER<span id="hackDots">.</span><span id="hackCommand"></span></div>
 <div id="consoleHack" class="console"></div>
@@ -260,18 +297,15 @@ class Hacker {
     }
     addFailure() {
         this.consecutiveFailures++;
-        // Penalidade padrão: reduz 1 do contador de sucessos (se >0)
         if (this.successCount > 0) {
             this.successCount--;
         } else if (this.level > 0) {
-            // Se já está zerado e falha, perde um nível imediatamente
             this.level--;
             this.successCount = this.getRequiredForNextLevel() - 1;
             log("consoleOps", `⚠️ ${this.getDisplayName()} PERDEU UM NÍVEL por falha crítica! Agora é ${this.getRankName()}!`);
             this.consecutiveFailures = 0;
             return;
         }
-        // Regra de 3 falhas consecutivas
         if (this.consecutiveFailures >= 3 && this.level > 0) {
             this.level--;
             this.successCount = this.getRequiredForNextLevel() - 1;
@@ -333,8 +367,7 @@ function completeHack(hacker, target) {
     const isSuccess = Math.random() * 100 < successChance;
     const baseReward = Math.floor(Math.random() * (target.maxReward - target.minReward + 1) + target.minReward);
     const reward = Math.floor(baseReward * prestigeBonus);
-    // PERDA = 75% do valor base (sem prestigeBonus)
-    const loss = Math.floor(baseReward * 0.75);
+    const loss = Math.floor(baseReward * 0.65); // 65% do valor base
     
     if (isSuccess) {
         usd += reward;
@@ -625,7 +658,7 @@ function openTab(e, id) {
     if(id === 'ops') updateHackerDisplay();
 }
 
-// ==================== HACK MANUAL (sem (dif) e loss 75%) ====================
+// ==================== SERVER HACK MANUAL ====================
 function hackServer(name, diff) {
     if(!connected) { log("consoleHack", "NETWORK OFFLINE"); return; }
     if(hacking) return;
@@ -732,8 +765,6 @@ function prestigeNetwork() {
         if(connected) scheduleDisconnectCheck();
     }
 }
-
-// ==================== SAVE / LOAD ====================
 function getGameState() {
     const hackersData = hackerList.map(h => ({ memberNumber: h.memberNumber, successCount: h.successCount, level: h.level, consecutiveFailures: h.consecutiveFailures }));
     return { data, usd, speed, minerLevel, minerCost, autoMiner, autoCost, autoMinerPower, autoMinerSpeed, autoSpeedCost,
@@ -799,8 +830,6 @@ document.getElementById('importFile').addEventListener('change', function(e) {
     reader.readAsText(file);
     e.target.value = '';
 });
-
-// ==================== HOLD BUTTONS ====================
 function startHold(buttonId, upgradeFunction) {
     if(holdIntervals[buttonId]) return;
     let success = upgradeFunction();
