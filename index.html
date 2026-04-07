@@ -22,11 +22,10 @@
             justify-content: center;
             position: relative;
             overflow-x: hidden;
-            overflow-y: auto;
             padding: 20px;
         }
 
-        /* Grade de fundo (mais sutil em mobile) */
+        /* Grade de fundo */
         .grid {
             position: fixed;
             top: 0;
@@ -34,21 +33,21 @@
             width: 100%;
             height: 100%;
             background-image: 
-                linear-gradient(rgba(0, 255, 0, 0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 0, 0.04) 1px, transparent 1px);
-            background-size: 30px 30px;
+                linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
             pointer-events: none;
             z-index: 0;
         }
 
-        /* Linhas de varredura (mais suaves em mobile) */
+        /* Linhas de varredura */
         .scanlines {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0, 255, 0, 0.02) 0px, rgba(0, 255, 0, 0.02) 2px, transparent 2px, transparent 6px);
+            background: repeating-linear-gradient(0deg, rgba(0, 255, 0, 0.03) 0px, rgba(0, 255, 0, 0.03) 2px, transparent 2px, transparent 6px);
             pointer-events: none;
             z-index: 1;
             animation: scanMove 8s linear infinite;
@@ -59,7 +58,7 @@
             100% { background-position: 0 20px; }
         }
 
-        /* Matrix simplificado para mobile (menos colunas) */
+        /* Partículas (código caindo) */
         .matrix-bg {
             position: fixed;
             top: 0;
@@ -68,9 +67,9 @@
             height: 100%;
             overflow: hidden;
             z-index: 0;
-            opacity: 0.1;
+            opacity: 0.15;
             font-family: monospace;
-            font-size: 12px;
+            font-size: 14px;
             pointer-events: none;
         }
 
@@ -85,12 +84,12 @@
             100% { transform: translateY(100vh); opacity: 0; }
         }
 
-        /* Container principal - responsivo */
+        /* Container principal */
         .container {
             position: relative;
             z-index: 10;
             border: 2px solid #0f0;
-            padding: 5vw 6vw;
+            padding: 30px 20px;
             background: rgba(0, 20, 0, 0.85);
             backdrop-filter: blur(3px);
             box-shadow: 0 0 40px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.1);
@@ -98,7 +97,7 @@
             max-width: 95%;
             width: 700px;
             animation: fadeIn 1.5s ease-out;
-            margin: 20px auto;
+            margin: auto;
         }
 
         @keyframes fadeIn {
@@ -107,8 +106,8 @@
         }
 
         h1 {
-            font-size: clamp(1.8rem, 8vw, 3.5rem);
-            letter-spacing: 0.1em;
+            font-size: 2.2rem;
+            letter-spacing: 4px;
             text-transform: uppercase;
             margin-bottom: 15px;
             font-weight: bold;
@@ -119,8 +118,8 @@
 
         @keyframes glitch {
             0%, 100% { transform: translate(0); text-shadow: 0 0 8px #0f0; }
-            20% { transform: translate(-1px, 1px); text-shadow: -1px 0 red, 1px 0 blue; }
-            40% { transform: translate(1px, -1px); text-shadow: 1px 0 red, -1px 0 blue; }
+            20% { transform: translate(-2px, 1px); text-shadow: -2px 0 red, 2px 0 blue; }
+            40% { transform: translate(2px, -1px); text-shadow: 2px 0 red, -2px 0 blue; }
             60% { transform: translate(-1px, 2px); }
             80% { transform: translate(1px, -2px); }
         }
@@ -129,14 +128,14 @@
             display: inline-block;
             border: 1px solid #0f0;
             padding: 6px 12px;
-            margin: 12px 0;
-            font-size: clamp(0.7rem, 3vw, 1rem);
+            margin: 10px 0;
+            font-size: 0.8rem;
             letter-spacing: 1px;
             background: #001a00;
             color: #0f0;
             text-transform: uppercase;
             animation: blink 2s step-end infinite;
-            word-break: keep-all;
+            word-break: break-word;
         }
 
         @keyframes blink {
@@ -146,11 +145,11 @@
 
         .description {
             margin: 15px 0;
-            font-size: clamp(0.8rem, 3.5vw, 1.1rem);
+            font-size: 0.9rem;
             line-height: 1.5;
             color: #8f8;
-            border-left: 2px solid #0f0;
-            padding-left: 12px;
+            border-left: 3px solid #0f0;
+            padding-left: 15px;
             text-align: left;
         }
 
@@ -169,31 +168,25 @@
             background: transparent;
             color: #0f0;
             border: 2px solid #0f0;
-            padding: 12px 20px;
-            font-size: clamp(1rem, 4vw, 1.4rem);
+            padding: 12px 25px;
+            font-size: 1.2rem;
             font-family: inherit;
             font-weight: bold;
             text-decoration: none;
-            margin-top: 20px;
+            margin-top: 15px;
             cursor: pointer;
             transition: all 0.3s;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 3px;
             position: relative;
             overflow: hidden;
-            width: auto;
-            min-width: 200px;
         }
 
         .btn-start:hover {
             background: #0f0;
             color: #000;
-            box-shadow: 0 0 20px #0f0;
+            box-shadow: 0 0 30px #0f0;
             transform: scale(1.02);
-        }
-
-        .btn-start:active {
-            transform: scale(0.98);
         }
 
         .btn-start::before {
@@ -215,13 +208,10 @@
             position: fixed;
             bottom: 10px;
             right: 10px;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             opacity: 0.6;
             z-index: 10;
             font-family: monospace;
-            background: rgba(0,0,0,0.5);
-            padding: 2px 6px;
-            border-radius: 4px;
         }
 
         .footer-note {
@@ -229,37 +219,38 @@
             bottom: 10px;
             left: 10px;
             font-size: 0.6rem;
-            opacity: 0.5;
+            opacity: 0.4;
             z-index: 10;
-            background: rgba(0,0,0,0.5);
-            padding: 2px 6px;
-            border-radius: 4px;
         }
 
-        /* Ajuste para telas muito pequenas (<=480px) */
-        @media (max-width: 480px) {
+        /* Responsividade para smartphones */
+        @media (max-width: 600px) {
             body {
                 padding: 10px;
             }
             .container {
-                padding: 20px 16px;
+                padding: 20px 15px;
                 width: 100%;
-                max-width: 100%;
             }
-            .description {
-                padding-left: 8px;
-                font-size: 0.75rem;
-            }
-            .btn-start {
-                min-width: 160px;
-                padding: 10px 16px;
+            h1 {
+                font-size: 1.6rem;
+                letter-spacing: 2px;
             }
             .status {
-                font-size: 0.65rem;
+                font-size: 0.7rem;
                 padding: 4px 8px;
             }
+            .description {
+                font-size: 0.8rem;
+                padding-left: 10px;
+            }
+            .btn-start {
+                padding: 10px 20px;
+                font-size: 1rem;
+                letter-spacing: 2px;
+            }
             .version, .footer-note {
-                font-size: 0.5rem;
+                font-size: 0.6rem;
             }
         }
     </style>
@@ -279,10 +270,9 @@
             <p>💾 Invada servidores ao redor do mundo, colete dados, ganhe dinheiro e evolua seus hackers.</p>
             <p>🛡️ Melhore sua firewall, aumente sua conexão e evite ser rastreado.</p>
             <p>🤖 Contrate hackers automáticos que sobem de patente e desbloqueiam novos alvos.</p>
-            <p>✨ Sistema de Prestígio: reinicie com bônus permanentes e domine o sistema.</p>
+            <!-- Linha removida: <p>✨ Sistema de Prestígio: reinicie com bônus permanentes e domine o sistema.</p> -->
         </div>
 
-        <!-- Link para o jogo (substitua pelo nome correto do seu arquivo) -->
         <a href="game%202.0%20pc.html" class="btn-start">INICIAR CONEXÃO</a>
     </div>
 
@@ -290,16 +280,13 @@
     <div class="footer-note">[ ACESSO AUTORIZADO APENAS PARA OPERADORES ]</div>
 
     <script>
-        // Efeito Matrix de fundo adaptado para mobile (menos elementos)
+        // Efeito Matrix de fundo (código caindo)
         function createMatrix() {
             const matrixDiv = document.getElementById('matrix');
             if (!matrixDiv) return;
             matrixDiv.innerHTML = '';
-            
-            // Reduz colunas em mobile para melhor performance
-            const isMobile = window.innerWidth < 768;
             const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%&*()_+{}[]:;<>,.?/~'.split('');
-            const columns = Math.floor(window.innerWidth / (isMobile ? 35 : 25));
+            const columns = Math.floor(window.innerWidth / 25);
             const drops = [];
             for (let i = 0; i < columns; i++) {
                 drops.push(Math.random() * -100);
@@ -309,15 +296,11 @@
                 let output = '';
                 for (let i = 0; i < columns; i++) {
                     const char = chars[Math.floor(Math.random() * chars.length)];
-                    const leftPos = i * (isMobile ? 30 : 25);
-                    const topPos = drops[i] * (isMobile ? 3 : 5);
-                    const duration = Math.random() * (isMobile ? 6 : 5) + 3;
-                    const opacity = Math.random() * 0.3 + 0.1;
-                    output += `<span style="left: ${leftPos}px; top: ${topPos}px; animation-duration: ${duration}s; opacity: ${opacity};">${char}</span>`;
-                    if (topPos > window.innerHeight) {
+                    output += `<span style="left: ${i * 25}px; top: ${drops[i] * 5}px; animation-duration: ${Math.random() * 5 + 3}s; opacity: ${Math.random() * 0.5 + 0.2};">${char}</span>`;
+                    if (drops[i] * 5 > window.innerHeight) {
                         drops[i] = -10;
                     }
-                    drops[i] += isMobile ? 0.2 : 0.3;
+                    drops[i] += 0.3;
                 }
                 matrixDiv.innerHTML = output;
                 requestAnimationFrame(draw);
@@ -326,11 +309,9 @@
         }
 
         window.addEventListener('resize', () => {
-            setTimeout(createMatrix, 200);
+            setTimeout(createMatrix, 100);
         });
-        
-        // Inicia o matrix com pequeno atraso para não travar a animação de entrada
-        setTimeout(createMatrix, 100);
+        createMatrix();
     </script>
 </body>
 </html>
