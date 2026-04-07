@@ -33,8 +33,8 @@
             width: 100%;
             height: 100%;
             background-image: 
-                linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
+                linear-gradient(rgba(0, 255, 0, 0.12) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.12) 1px, transparent 1px);
             background-size: 40px 40px;
             pointer-events: none;
             z-index: 0;
@@ -47,7 +47,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0, 255, 0, 0.03) 0px, rgba(0, 255, 0, 0.03) 2px, transparent 2px, transparent 6px);
+            background: repeating-linear-gradient(0deg, rgba(0, 255, 0, 0.08) 0px, rgba(0, 255, 0, 0.08) 2px, transparent 2px, transparent 6px);
             pointer-events: none;
             z-index: 1;
             animation: scanMove 8s linear infinite;
@@ -58,7 +58,7 @@
             100% { background-position: 0 20px; }
         }
 
-        /* Partículas (código caindo) */
+        /* Partículas (código caindo) - BRILHO MUITO AUMENTADO */
         .matrix-bg {
             position: fixed;
             top: 0;
@@ -67,9 +67,9 @@
             height: 100%;
             overflow: hidden;
             z-index: 0;
-            opacity: 0.15;
+            opacity: 0.65; /* aumentado de 0.4 para 0.65 */
             font-family: monospace;
-            font-size: 14px;
+            font-size: 18px;
             pointer-events: none;
         }
 
@@ -77,11 +77,14 @@
             position: absolute;
             white-space: pre;
             animation: fall linear infinite;
+            color: #0f0;
+            text-shadow: 0 0 12px #0f0, 0 0 6px #0f0; /* brilho muito mais forte */
+            font-weight: bold;
         }
 
         @keyframes fall {
             0% { transform: translateY(-100%); opacity: 1; }
-            100% { transform: translateY(100vh); opacity: 0; }
+            100% { transform: translateY(100vh); opacity: 0.4; }
         }
 
         /* Container principal */
@@ -92,7 +95,7 @@
             padding: 30px 20px;
             background: rgba(0, 20, 0, 0.85);
             backdrop-filter: blur(3px);
-            box-shadow: 0 0 40px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 80px rgba(0, 255, 0, 0.6), inset 0 0 40px rgba(0, 255, 0, 0.2);
             text-align: center;
             max-width: 95%;
             width: 650px;
@@ -111,13 +114,13 @@
             text-transform: uppercase;
             margin-bottom: 15px;
             font-weight: bold;
-            text-shadow: 0 0 8px #0f0, 0 0 15px #0f0;
+            text-shadow: 0 0 18px #0f0, 0 0 30px #0f0;
             animation: glitch 3s infinite;
             word-break: break-word;
         }
 
         @keyframes glitch {
-            0%, 100% { transform: translate(0); text-shadow: 0 0 8px #0f0; }
+            0%, 100% { transform: translate(0); text-shadow: 0 0 18px #0f0, 0 0 30px #0f0; }
             20% { transform: translate(-2px, 1px); text-shadow: -2px 0 red, 2px 0 blue; }
             40% { transform: translate(2px, -1px); text-shadow: 2px 0 red, -2px 0 blue; }
             60% { transform: translate(-1px, 2px); }
@@ -138,11 +141,12 @@
             white-space: nowrap;
             overflow-x: auto;
             max-width: 100%;
+            box-shadow: 0 0 12px rgba(0,255,0,0.7);
         }
 
         @keyframes blink {
-            0%, 100% { opacity: 1; box-shadow: 0 0 5px #0f0; }
-            50% { opacity: 0.6; box-shadow: 0 0 15px #0f0; }
+            0%, 100% { opacity: 1; box-shadow: 0 0 12px #0f0; }
+            50% { opacity: 0.7; box-shadow: 0 0 30px #0f0; }
         }
 
         .description {
@@ -153,6 +157,7 @@
             border-left: 3px solid #0f0;
             padding-left: 15px;
             text-align: left;
+            text-shadow: 0 0 3px rgba(0,255,0,0.5);
         }
 
         .description p {
@@ -162,7 +167,7 @@
         .description .highlight {
             color: #0f0;
             font-weight: bold;
-            text-shadow: 0 0 3px #0f0;
+            text-shadow: 0 0 8px #0f0;
         }
 
         .btn-start {
@@ -184,12 +189,13 @@
             overflow: hidden;
             width: auto;
             min-width: 200px;
+            box-shadow: 0 0 15px rgba(0,255,0,0.5);
         }
 
         .btn-start:hover {
             background: #0f0;
             color: #000;
-            box-shadow: 0 0 30px #0f0;
+            box-shadow: 0 0 50px #0f0;
             transform: scale(1.02);
         }
 
@@ -200,7 +206,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.4), transparent);
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.8), transparent);
             transition: left 0.5s;
         }
 
@@ -225,7 +231,8 @@
         .version, .footer-note {
             font-family: monospace;
             font-size: 0.7rem;
-            opacity: 0.7;
+            opacity: 0.9;
+            text-shadow: 0 0 5px #0f0;
             white-space: nowrap;
         }
 
@@ -260,6 +267,10 @@
                 margin-top: 10px;
                 padding: 10px 5px;
             }
+            .matrix-bg {
+                opacity: 0.55;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -289,13 +300,13 @@
     </div>
 
     <script>
-        // Efeito Matrix de fundo (código caindo)
+        // Efeito Matrix de fundo com brilho extremamente aumentado
         function createMatrix() {
             const matrixDiv = document.getElementById('matrix');
             if (!matrixDiv) return;
             matrixDiv.innerHTML = '';
-            const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%&*()_+{}[]:;<>,.?/~'.split('');
-            const columns = Math.floor(window.innerWidth / 25);
+            const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%&*()_+{}[]:;<>,.?/~';
+            const columns = Math.floor(window.innerWidth / 18); // mais denso
             const drops = [];
             for (let i = 0; i < columns; i++) {
                 drops.push(Math.random() * -100);
@@ -305,11 +316,14 @@
                 let output = '';
                 for (let i = 0; i < columns; i++) {
                     const char = chars[Math.floor(Math.random() * chars.length)];
-                    output += `<span style="left: ${i * 25}px; top: ${drops[i] * 5}px; animation-duration: ${Math.random() * 5 + 3}s; opacity: ${Math.random() * 0.5 + 0.2};">${char}</span>`;
-                    if (drops[i] * 5 > window.innerHeight) {
-                        drops[i] = -10;
+                    // Brilho e opacidade ainda mais altos
+                    const brightness = Math.random() * 0.3 + 0.7; // entre 0.7 e 1.0
+                    const shadowSize = Math.random() * 8 + 6; // entre 6px e 14px
+                    output += `<span style="left: ${i * 18}px; top: ${drops[i] * 4}px; animation-duration: ${Math.random() * 3 + 1.5}s; opacity: ${brightness}; text-shadow: 0 0 ${shadowSize}px #0f0;">${char}</span>`;
+                    if (drops[i] * 4 > window.innerHeight) {
+                        drops[i] = -15;
                     }
-                    drops[i] += 0.3;
+                    drops[i] += 0.5; // velocidade maior
                 }
                 matrixDiv.innerHTML = output;
                 requestAnimationFrame(draw);
