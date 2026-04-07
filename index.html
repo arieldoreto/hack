@@ -208,30 +208,33 @@
             left: 100%;
         }
 
-        /* Rodapé fixo sem sobreposição */
+        /* Rodapé centralizado */
         .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 15px;
-            font-size: 0.7rem;
-            opacity: 0.6;
+            position: relative;
+            width: 100%;
+            text-align: center;
+            padding: 15px 10px 5px;
+            margin-top: 20px;
             z-index: 10;
-            background: rgba(0,0,0,0.5);
-            pointer-events: none;
-            flex-wrap: wrap;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             gap: 5px;
         }
 
         .version, .footer-note {
             font-family: monospace;
+            font-size: 0.7rem;
+            opacity: 0.7;
             white-space: nowrap;
         }
 
+        /* Ajuste para telas muito pequenas */
         @media (max-width: 550px) {
+            body {
+                justify-content: center;
+                padding: 10px;
+            }
             .container {
                 padding: 20px 15px;
                 margin: 10px auto;
@@ -244,20 +247,18 @@
             .description {
                 padding-left: 10px;
             }
-            .footer {
-                font-size: 0.6rem;
-                padding: 5px 10px;
-                position: relative;
-                margin-top: 20px;
-                background: transparent;
-            }
-            body {
-                justify-content: space-between;
-                padding-bottom: 10px;
-            }
             .btn-start {
                 min-width: 160px;
                 padding: 10px 20px;
+            }
+            .version, .footer-note {
+                white-space: normal;
+                word-break: keep-all;
+                font-size: 0.65rem;
+            }
+            .footer {
+                margin-top: 10px;
+                padding: 10px 5px;
             }
         }
     </style>
@@ -277,7 +278,6 @@
             <p>💾 Invada servidores, colete dados, ganhe dinheiro e evolua seus hackers.</p>
             <p>🛡️ Melhore firewall, aumente sua conexão e evite ser rastreado.</p>
             <p>🤖 Hackers automáticos com patentes e evolução.</p>
-            <!-- Linha do prestígio removida conforme solicitado -->
         </div>
 
         <a href="game%202.0%20pc.html" class="btn-start">INICIAR CONEXÃO</a>
