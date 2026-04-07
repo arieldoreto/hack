@@ -844,16 +844,34 @@ function loadGameState(state) {
     software = state.software; downCost = state.downCost; softCost = state.softCost;
     prestigeBonus = state.prestigeBonus || 1.0; prestigeCount = state.prestigeCount || 0; signalBonus = state.signalBonus || 0;
     usedNames = state.usedNames || [];
+    
+    // CORREÇÃO: se o save não tem hackersData (save antigo) OU tem mas não tem nomes, geramos nomes
     if (state.hackersData && state.hackersData.length > 0) {
+        // Save novo com dados de hackers
         hackerList = [];
         for (let hData of state.hackersData) {
-            const hacker = new Hacker(`hm_${hData.memberNumber}`, hData.memberNumber, hData.name);
+            // Se o nome não existe ou é "undefined", gera um novo
+            let hackerName = hData.name;
+            if (!hackerName || hackerName === "undefined" || hackerName === "Hacker Desconhecido") {
+                hackerName = getRandomHackerName();
+            }
+            const hacker = new Hacker(`hm_${hData.memberNumber}`, hData.memberNumber, hackerName);
             hacker.successCount = hData.successCount || 0;
             hacker.level = hData.level || 0;
             hacker.consecutiveFailures = hData.consecutiveFailures || 0;
             hackerList.push(hacker);
         }
-    } else { initHackers(); }
+    } else {
+        // Save antigo (sem hackersData) - cria hackers com base no valor 'hackers'
+        hackerList = [];
+        for (let i = 0; i < hackers; i++) {
+            let newName = getRandomHackerName();
+            let hacker = new Hacker(`hm_${i+1}`, i+1, newName);
+            // Mantém o progresso? Não temos dados, então começa do zero. Mas pelo menos o número de hackers é respeitado.
+            hackerList.push(hacker);
+        }
+        log("consoleOps", "🔄 Save antigo detectado. Nomes gerados aleatoriamente para seus hackers.");
+    }
     update(); updateSignal();
     if (connected) for (let hacker of hackerList) startHackerWork(hacker);
     updateHackerDisplay();
