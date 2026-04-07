@@ -583,7 +583,8 @@ function update() {
     document.getElementById("autoReconnectCost").innerText = formatUSD(autoReconnectCost);
     document.getElementById("prestigeCost").innerText = formatUSD(getPrestigeCost());
     document.getElementById("prestigeBonusDisplay").innerText = prestigeBonus.toFixed(2) + 'x';
-    document.getElementById("prestigeCount").innerText = prestigeCount + '/35';
+    // CORREÇÃO: apenas o número, sem o '/35' (o /35 já está no HTML)
+    document.getElementById("prestigeCount").innerText = prestigeCount;
     let nameIndex = Math.min(firewallLevel, firewallNames.length - 1);
     document.getElementById("firewallName").innerText = firewallNames[nameIndex];
     updateFirewallBar();
