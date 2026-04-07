@@ -1,38 +1,291 @@
-<!doctype html>
-<html lang=pt-br>
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
-    <meta charset=UTF-8>
-    <meta name=viewport content="width=device-width,initial-scale=1">
-    <title>CYBER HACK 2.0 - Capa</title>
-    <style>body{background:#000;color:#0f0;font-family:'Courier New',Courier,monospace;margin:0;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;overflow:hidden;text-align:center}.container{border:2px solid #0f0;padding:40px;box-shadow:0 0 20px #0f0;background:rgba(0,20,0,.9);max-width:80%;position:relative;z-index:10}h1{font-size:3rem;margin:0;letter-spacing:5px;text-transform:uppercase;animation:glitch 2s infinite}.status{margin:20px 0;font-size:1.2rem;color:red;text-transform:uppercase;border:1px dashed red;padding:10px;animation:blink 1.5s infinite}.description{margin:20px 0;font-size:1rem;line-height:1.5;color:#0c0}.btn-start{background:#000;color:#0f0;border:2px solid #0f0;padding:15px 30px;font-size:1.5rem;cursor:pointer;text-decoration:none;display:inline-block;margin-top:20px;transition:all .3s;font-family:inherit}.btn-start:hover{background:#0f0;color:#000;box-shadow:0 0 30px #0f0}@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}@keyframes glitch{0%{transform:translate(0)}20%{transform:translate(-2px,2px)}40%{transform:translate(-2px,-2px)}60%{transform:translate(2px,2px)}80%{transform:translate(2px,-2px)}100%{transform:translate(0)}}.background-lines{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;opacity:.1;z-index:1;overflow:hidden}.line{position:absolute;width:100%;height:1px;background:#0f0;animation:scan 4s linear infinite}@keyframes scan{from{top:-10%}to{top:110%}}.version{position:absolute;bottom:10px;right:10px;font-size:.8rem}</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DATA MINER ENGINE | Cyber Hack 2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #001a00 0%, #000000 100%);
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            cursor: default;
+        }
+
+        /* Grade de fundo */
+        .grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Linhas de varredura */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0, 255, 0, 0.03) 0px, rgba(0, 255, 0, 0.03) 2px, transparent 2px, transparent 6px);
+            pointer-events: none;
+            z-index: 1;
+            animation: scanMove 8s linear infinite;
+        }
+
+        @keyframes scanMove {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 20px; }
+        }
+
+        /* Partículas (código caindo) */
+        .matrix-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            opacity: 0.15;
+            font-family: monospace;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .matrix-bg span {
+            position: absolute;
+            white-space: pre;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100%); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        /* Container principal */
+        .container {
+            position: relative;
+            z-index: 10;
+            border: 2px solid #0f0;
+            padding: 50px 60px;
+            background: rgba(0, 20, 0, 0.85);
+            backdrop-filter: blur(3px);
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.3), inset 0 0 20px rgba(0, 255, 0, 0.1);
+            text-align: center;
+            max-width: 90%;
+            width: 700px;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-shadow: 0 0 8px #0f0, 0 0 15px #0f0;
+            animation: glitch 3s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); text-shadow: 0 0 8px #0f0; }
+            20% { transform: translate(-2px, 1px); text-shadow: -2px 0 red, 2px 0 blue; }
+            40% { transform: translate(2px, -1px); text-shadow: 2px 0 red, -2px 0 blue; }
+            60% { transform: translate(-1px, 2px); }
+            80% { transform: translate(1px, -2px); }
+        }
+
+        .status {
+            display: inline-block;
+            border: 1px solid #0f0;
+            padding: 8px 20px;
+            margin: 15px 0;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            background: #001a00;
+            color: #0f0;
+            text-transform: uppercase;
+            animation: blink 2s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; box-shadow: 0 0 5px #0f0; }
+            50% { opacity: 0.6; box-shadow: 0 0 15px #0f0; }
+        }
+
+        .description {
+            margin: 20px 0;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #8f8;
+            border-left: 3px solid #0f0;
+            padding-left: 20px;
+            text-align: left;
+        }
+
+        .description p {
+            margin: 8px 0;
+        }
+
+        .description .highlight {
+            color: #0f0;
+            font-weight: bold;
+            text-shadow: 0 0 3px #0f0;
+        }
+
+        .btn-start {
+            display: inline-block;
+            background: transparent;
+            color: #0f0;
+            border: 2px solid #0f0;
+            padding: 14px 40px;
+            font-size: 1.4rem;
+            font-family: inherit;
+            font-weight: bold;
+            text-decoration: none;
+            margin-top: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-start:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 30px #0f0;
+            transform: scale(1.02);
+        }
+
+        .btn-start::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-start:hover::before {
+            left: 100%;
+        }
+
+        .version {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            z-index: 10;
+            font-family: monospace;
+        }
+
+        .footer-note {
+            position: absolute;
+            bottom: 15px;
+            left: 20px;
+            font-size: 0.7rem;
+            opacity: 0.5;
+            z-index: 10;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .container { padding: 30px 20px; width: 95%; }
+            h1 { font-size: 2rem; letter-spacing: 4px; }
+            .btn-start { padding: 10px 25px; font-size: 1.1rem; }
+            .description { font-size: 0.9rem; }
+        }
+    </style>
 </head>
 <body>
 
-    <div class=background-lines>
-        <div class=line style=animation-delay:0s></div>
-        <div class=line style=animation-delay:1s></div>
-        <div class=line style=animation-delay:2s></div>
-        <div class=line style=animation-delay:3s></div>
-    </div>
+    <div class="grid"></div>
+    <div class="scanlines"></div>
+    <div class="matrix-bg" id="matrix"></div>
 
-    <div class=container>
-        <h1>CYBER HACK 2.0</h1>
-        
-        <div class=status>
-            [ ACESSO RESTRITO - EM DESENVOLVIMENTO ]
+    <div class="container">
+        <h1>DATA MINER ENGINE</h1>
+        <div class="status">[ CYBER HACK 2.0 - CONEXÃO SEGURA ]</div>
+
+        <div class="description">
+            <p>⚡ <span class="highlight">Data Miner Engine</span> é um jogo de simulação de hacking e mineração de dados.</p>
+            <p>💾 Invada servidores ao redor do mundo, colete dados, ganhe dinheiro e evolua seus hackers.</p>
+            <p>🛡️ Melhore sua firewall, aumente sua conexão e evite ser rastreado.</p>
+            <p>🤖 Contrate hackers automáticos que sobem de patente e desbloqueiam novos alvos.</p>
+            <p>✨ Sistema de Prestígio: reinicie com bônus permanentes e domine o sistema.</p>
         </div>
 
-        <div class=description>
-            O sistema está sendo compilado. <br>
-            Módulos de infiltração em 74%... <br>
-            Prepare-se para o próximo nível de exploração de dados.
-        </div>
-
-        <a href=game%202.0%20pc.html class=btn-start>INICIAR CONEXÃO</a>
+        <a href="game.html" class="btn-start">INICIAR CONEXÃO</a>
     </div>
 
-    <div class=version>v2.0-beta_dev</div>
+    <div class="version">DATA MINER ENGINE v2.0 - Modo Sombra</div>
+    <div class="footer-note">[ ACESSO AUTORIZADO APENAS PARA OPERADORES ]</div>
 
-    <script>console.log("Sistema inicializado...")</script>
+    <script>
+        // Efeito Matrix de fundo (código caindo)
+        function createMatrix() {
+            const matrixDiv = document.getElementById('matrix');
+            if (!matrixDiv) return;
+            matrixDiv.innerHTML = '';
+            const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%&*()_+{}[]:;<>,.?/~'.split('');
+            const columns = Math.floor(window.innerWidth / 25);
+            const drops = [];
+            for (let i = 0; i < columns; i++) {
+                drops.push(Math.random() * -100);
+            }
 
+            function draw() {
+                let output = '';
+                for (let i = 0; i < columns; i++) {
+                    const char = chars[Math.floor(Math.random() * chars.length)];
+                    output += `<span style="left: ${i * 25}px; top: ${drops[i] * 5}px; animation-duration: ${Math.random() * 5 + 3}s; opacity: ${Math.random() * 0.5 + 0.2};">${char}</span>`;
+                    if (drops[i] * 5 > window.innerHeight) {
+                        drops[i] = -10;
+                    }
+                    drops[i] += 0.3;
+                }
+                matrixDiv.innerHTML = output;
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
 
+        window.addEventListener('resize', () => {
+            setTimeout(createMatrix, 100);
+        });
+        createMatrix();
+    </script>
+</body>
+</html>
