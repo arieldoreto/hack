@@ -58,7 +58,7 @@
             100% { background-position: 0 20px; }
         }
 
-        /* Partículas (código caindo) - BRILHO MUITO AUMENTADO */
+        /* Partículas (código caindo) */
         .matrix-bg {
             position: fixed;
             top: 0;
@@ -67,7 +67,7 @@
             height: 100%;
             overflow: hidden;
             z-index: 0;
-            opacity: 0.65; /* aumentado de 0.4 para 0.65 */
+            opacity: 0.65;
             font-family: monospace;
             font-size: 18px;
             pointer-events: none;
@@ -78,7 +78,7 @@
             white-space: pre;
             animation: fall linear infinite;
             color: #0f0;
-            text-shadow: 0 0 12px #0f0, 0 0 6px #0f0; /* brilho muito mais forte */
+            text-shadow: 0 0 12px #0f0, 0 0 6px #0f0;
             font-weight: bold;
         }
 
@@ -87,7 +87,7 @@
             100% { transform: translateY(100vh); opacity: 0.4; }
         }
 
-        /* Container principal */
+        /* Container principal - FLEX COLUMN para centralizar botões um abaixo do outro */
         .container {
             position: relative;
             z-index: 10;
@@ -96,11 +96,13 @@
             background: rgba(0, 20, 0, 0.85);
             backdrop-filter: blur(3px);
             box-shadow: 0 0 80px rgba(0, 255, 0, 0.6), inset 0 0 40px rgba(0, 255, 0, 0.2);
-            text-align: center;
             max-width: 95%;
             width: 650px;
             animation: fadeIn 1.5s ease-out;
             margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         @keyframes fadeIn {
@@ -117,6 +119,7 @@
             text-shadow: 0 0 18px #0f0, 0 0 30px #0f0;
             animation: glitch 3s infinite;
             word-break: break-word;
+            text-align: center;
         }
 
         @keyframes glitch {
@@ -158,6 +161,7 @@
             padding-left: 15px;
             text-align: left;
             text-shadow: 0 0 3px rgba(0,255,0,0.5);
+            width: 100%;
         }
 
         .description p {
@@ -170,6 +174,7 @@
             text-shadow: 0 0 8px #0f0;
         }
 
+        /* Botão principal */
         .btn-start {
             display: inline-block;
             background: transparent;
@@ -190,6 +195,7 @@
             width: auto;
             min-width: 200px;
             box-shadow: 0 0 15px rgba(0,255,0,0.5);
+            text-align: center;
         }
 
         .btn-start:hover {
@@ -212,6 +218,117 @@
 
         .btn-start:hover::before {
             left: 100%;
+        }
+
+        /* Botão "Como Jogar" - vermelho, metade do tamanho, abaixo */
+        .btn-help {
+            display: inline-block;
+            background: transparent;
+            color: #ff3333;
+            border: 2px solid #ff3333;
+            padding: 6px 12px;
+            font-size: clamp(0.7rem, 3vw, 0.9rem);
+            font-family: inherit;
+            font-weight: bold;
+            text-decoration: none;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            width: auto;
+            min-width: 120px;
+            box-shadow: 0 0 8px rgba(255, 51, 51, 0.4);
+            text-align: center;
+        }
+
+        .btn-help:hover {
+            background: #ff3333;
+            color: #000;
+            box-shadow: 0 0 25px #ff3333;
+            transform: scale(1.02);
+        }
+
+        /* Modal (popup de ajuda) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #001a00;
+            border: 2px solid #0f0;
+            padding: 20px;
+            max-width: 90%;
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.5);
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content h2 {
+            color: #0f0;
+            text-align: center;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        .modal-content h3 {
+            color: #ffaa00;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #0f0;
+            display: inline-block;
+        }
+
+        .modal-content p {
+            margin: 8px 0;
+            line-height: 1.4;
+            font-size: 0.9rem;
+        }
+
+        .modal-content ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .modal-content li {
+            margin: 5px 0;
+            font-size: 0.85rem;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #ff3333;
+            transition: 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #ff8888;
+            transform: scale(1.2);
         }
 
         /* Rodapé centralizado */
@@ -258,6 +375,10 @@
                 min-width: 160px;
                 padding: 10px 20px;
             }
+            .btn-help {
+                min-width: 100px;
+                padding: 5px 10px;
+            }
             .version, .footer-note {
                 white-space: normal;
                 word-break: keep-all;
@@ -270,6 +391,16 @@
             .matrix-bg {
                 opacity: 0.55;
                 font-size: 14px;
+            }
+            .modal-content {
+                padding: 15px;
+                width: 95%;
+            }
+            .modal-content h2 {
+                font-size: 1.2rem;
+            }
+            .modal-content p, .modal-content li {
+                font-size: 0.75rem;
             }
         }
     </style>
@@ -292,6 +423,7 @@
         </div>
 
         <a href="game%202.0%20pc.html" class="btn-start">INICIAR CONEXÃO</a>
+        <button class="btn-help" id="helpBtn">📖 COMO JOGAR</button>
     </div>
 
     <div class="footer">
@@ -299,14 +431,85 @@
         <div class="footer-note">[ ACESSO AUTORIZADO ]</div>
     </div>
 
+    <!-- Modal de ajuda -->
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>📖 MANUAL DO JOGADOR</h2>
+            
+            <h3>🎮 VISÃO GERAL</h3>
+            <p>DATA MINER ENGINE é um jogo incremental onde você <strong>mina dados</strong> e <strong>invade servidores</strong> para ganhar dinheiro (USD). Com o dinheiro, você compra upgrades que aumentam sua produção e contrata hackers automáticos. O jogo possui três abas principais.</p>
+            
+            <h3>📡 DATA FARM (Mineração)</h3>
+            <ul>
+                <li><strong>Upgrade Miner:</strong> Aumenta sua taxa de mineração manual (DATA/s).</li>
+                <li><strong>Auto Miner:</strong> Compra mineradores automáticos que produzem DATA passivamente.</li>
+                <li><strong>Upgrade Auto Miner Speed:</strong> Aumenta a velocidade dos auto miners.</li>
+                <li><strong>Upgrade Connection:</strong> Melhora o sinal de rede, reduzindo quedas de conexão.</li>
+                <li><strong>Firewall:</strong> Reduz a chance de perder a conexão.</li>
+                <li><strong>Auto Reconnect:</strong> Reconecta automaticamente se a conexão cair.</li>
+                <li><strong>Upgrade Check Interval:</strong> Aumenta o tempo entre verificações de desconexão.</li>
+                <li><strong>Clique no console (caixa preta)</strong> para minerar manualmente a qualquer momento.</li>
+            </ul>
+            
+            <h3>🔓 SERVER HACK (Invasão Manual)</h3>
+            <ul>
+                <li><strong>Upgrade Download:</strong> Acelera o tempo de hackeamento.</li>
+                <li><strong>Upgrade Software:</strong> Aumenta a chance de sucesso nas invasões.</li>
+                <li><strong>Servidores:</strong> Clique em qualquer país para tentar invadi-lo.</li>
+                <li>Sucesso: ganha USD e um bônus temporário de sinal.</li>
+                <li>Falha: perde parte do valor (65% do que ganharia).</li>
+            </ul>
+            
+            <h3>🤖 DARK OPS (Hackers Automáticos)</h3>
+            <ul>
+                <li><strong>Buy Hacker Member:</strong> Contrata um hacker automático. Cada um ataca servidores aleatórios que pode invadir (baseado no nível).</li>
+                <li><strong>Upgrade Botnet:</strong> Aumenta a chance de sucesso de TODOS os hackers (+2% por nível).</li>
+                <li><strong>Patentes:</strong> Cada hacker tem 20 patentes (ex: Script Kiddie, Lamer, etc.) e 5 níveis romanos por patente (I a V).</li>
+                <li><strong>Progresso:</strong> Cada hacker precisa de 100 hacks bem sucedidos para subir de nível. Falhas consecutivas (3) ou falha crítica zerada podem rebaixá-lo.</li>
+                <li><strong>Falhas consecutivas:</strong> Se falhar 3 vezes seguidas sem um sucesso, perde um nível.</li>
+                <li><strong>Dificuldade máxima:</strong> Hackers começam atacando apenas servidores fáceis (Brasil, Peru, etc.) e conforme sobem de nível, desbloqueiam servidores mais difíceis (EUA, Suíça, etc.).</li>
+            </ul>
+            
+            <h3>💰 SISTEMA ECONÔMICO</h3>
+            <ul>
+                <li><strong>DATA:</strong> Recurso primário, usado para comprar upgrades de mineração e conexão.</li>
+                <li><strong>USD (dólares):</strong> Ganho invadindo servidores (manual ou automático). Usado para upgrades de software, hackers, botnet, firewall, etc.</li>
+                <li><strong>Prestígio:</strong> Ao acumular $1.000.000, você pode resetar o jogo (mantendo apenas o bônus de prestígio). Cada prestígio dá +5% multiplicativo em toda geração de DATA e USD. Máximo 35 prestígios.</li>
+            </ul>
+            
+            <h3>⚠️ MECÂNICAS IMPORTANTES</h3>
+            <ul>
+                <li><strong>Conexão:</strong> Se o sinal cair muito, você perde a conexão e não pode minerar/hackear até reconectar (ou usar Auto Reconnect).</li>
+                <li><strong>Signal Boost:</strong> Ao hackear com sucesso, você ganha um bônus temporário de sinal (decai 1% por segundo).</li>
+                <li><strong>Perda por falha:</strong> Ao falhar uma invasão (manual ou automática), você perde 65% do valor que ganharia no sucesso.</li>
+                <li><strong>Hold buttons:</strong> Mantenha pressionado qualquer botão de upgrade para comprar repetidamente (suporta toque em celulares).</li>
+                <li><strong>Save/Load:</strong> Use os botões na aba DARK OPS para salvar seu progresso no navegador, exportar ou importar arquivos de save.</li>
+            </ul>
+            
+            <h3>✨ DICAS PARA INICIANTES</h3>
+            <ul>
+                <li>Comece minerando manualmente (clique no console da DATA FARM) para ganhar DATA.</li>
+                <li>Compre alguns níveis de <strong>Upgrade Miner</strong> e depois <strong>Auto Miner</strong>.</li>
+                <li>Invada servidores fáceis (Brasil, Peru) manualmente para ganhar USD rápido.</li>
+                <li>Invista em <strong>Software</strong> (chance de sucesso) e <strong>Download</strong> (velocidade).</li>
+                <li>Contrate <strong>Hacker Members</strong> assim que possível – eles trabalham 24h por dia.</li>
+                <li>Melhore a <strong>Conexão</strong> e a <strong>Firewall</strong> para evitar quedas.</li>
+                <li>Quando tiver $1.000.000, faça o <strong>Prestígio</strong> para ganhar bônus permanentes.</li>
+            </ul>
+            
+            <p style="text-align: center; margin-top: 15px;"><span class="highlight">Boa sorte, operador! Que o código esteja com você.</span></p>
+        </div>
+    </div>
+
     <script>
-        // Efeito Matrix de fundo com brilho extremamente aumentado
+        // Efeito Matrix de fundo
         function createMatrix() {
             const matrixDiv = document.getElementById('matrix');
             if (!matrixDiv) return;
             matrixDiv.innerHTML = '';
             const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%&*()_+{}[]:;<>,.?/~';
-            const columns = Math.floor(window.innerWidth / 18); // mais denso
+            const columns = Math.floor(window.innerWidth / 18);
             const drops = [];
             for (let i = 0; i < columns; i++) {
                 drops.push(Math.random() * -100);
@@ -316,14 +519,13 @@
                 let output = '';
                 for (let i = 0; i < columns; i++) {
                     const char = chars[Math.floor(Math.random() * chars.length)];
-                    // Brilho e opacidade ainda mais altos
-                    const brightness = Math.random() * 0.3 + 0.7; // entre 0.7 e 1.0
-                    const shadowSize = Math.random() * 8 + 6; // entre 6px e 14px
+                    const brightness = Math.random() * 0.3 + 0.7;
+                    const shadowSize = Math.random() * 8 + 6;
                     output += `<span style="left: ${i * 18}px; top: ${drops[i] * 4}px; animation-duration: ${Math.random() * 3 + 1.5}s; opacity: ${brightness}; text-shadow: 0 0 ${shadowSize}px #0f0;">${char}</span>`;
                     if (drops[i] * 4 > window.innerHeight) {
                         drops[i] = -15;
                     }
-                    drops[i] += 0.5; // velocidade maior
+                    drops[i] += 0.5;
                 }
                 matrixDiv.innerHTML = output;
                 requestAnimationFrame(draw);
@@ -335,6 +537,25 @@
             setTimeout(createMatrix, 100);
         });
         createMatrix();
+
+        // Modal de ajuda
+        const modal = document.getElementById('helpModal');
+        const helpBtn = document.getElementById('helpBtn');
+        const closeBtn = document.querySelector('.close-modal');
+
+        helpBtn.onclick = function() {
+            modal.style.display = 'flex';
+        }
+
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>
