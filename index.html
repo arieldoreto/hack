@@ -87,7 +87,7 @@
             100% { transform: translateY(100vh); opacity: 0.4; }
         }
 
-        /* Container principal - FLEX COLUMN para centralizar botões um abaixo do outro */
+        /* Container principal */
         .container {
             position: relative;
             z-index: 10;
@@ -220,7 +220,7 @@
             left: 100%;
         }
 
-        /* Botão "Como Jogar" - vermelho, metade do tamanho, abaixo */
+        /* Botão "Como Jogar" */
         .btn-help {
             display: inline-block;
             background: transparent;
@@ -249,7 +249,7 @@
             transform: scale(1.02);
         }
 
-        /* Modal (popup de ajuda) */
+        /* Modal - com cabeçalho fixo (sticky) */
         .modal {
             display: none;
             position: fixed;
@@ -267,9 +267,8 @@
         .modal-content {
             background: #001a00;
             border: 2px solid #0f0;
-            padding: 20px;
             max-width: 90%;
-            width: 500px;
+            width: 550px;
             max-height: 80vh;
             overflow-y: auto;
             position: relative;
@@ -277,21 +276,48 @@
             animation: modalFadeIn 0.3s ease-out;
         }
 
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        /* Cabeçalho fixo no topo do modal */
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background: #001a00;
+            padding: 12px 15px;
+            border-bottom: 1px solid #0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
         }
 
-        .modal-content h2 {
+        .modal-header h2 {
             color: #0f0;
-            text-align: center;
-            margin-bottom: 15px;
+            margin: 0;
+            font-size: 1.3rem;
             text-transform: uppercase;
             letter-spacing: 2px;
             text-shadow: 0 0 5px #0f0;
         }
 
-        .modal-content h3 {
+        .close-modal {
+            font-size: 28px;
+            cursor: pointer;
+            color: #0f0; /* Verde */
+            transition: 0.2s;
+            line-height: 1;
+            font-weight: bold;
+        }
+
+        .close-modal:hover {
+            color: #ffaa00;
+            transform: scale(1.2);
+        }
+
+        /* Corpo do modal com rolagem */
+        .modal-body {
+            padding: 15px 20px;
+        }
+
+        .modal-body h3 {
             color: #ffaa00;
             margin-top: 15px;
             margin-bottom: 8px;
@@ -300,35 +326,25 @@
             display: inline-block;
         }
 
-        .modal-content p {
+        .modal-body p {
             margin: 8px 0;
             line-height: 1.4;
             font-size: 0.9rem;
         }
 
-        .modal-content ul {
+        .modal-body ul {
             margin-left: 20px;
             margin-bottom: 10px;
         }
 
-        .modal-content li {
+        .modal-body li {
             margin: 5px 0;
             font-size: 0.85rem;
         }
 
-        .close-modal {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 24px;
-            cursor: pointer;
-            color: #ff3333;
-            transition: 0.2s;
-        }
-
-        .close-modal:hover {
-            color: #ff8888;
-            transform: scale(1.2);
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         /* Rodapé centralizado */
@@ -353,7 +369,7 @@
             white-space: nowrap;
         }
 
-        /* Ajuste para telas muito pequenas */
+        /* Ajustes para telas pequenas */
         @media (max-width: 550px) {
             body {
                 justify-content: center;
@@ -393,14 +409,16 @@
                 font-size: 14px;
             }
             .modal-content {
-                padding: 15px;
                 width: 95%;
             }
-            .modal-content h2 {
-                font-size: 1.2rem;
+            .modal-header h2 {
+                font-size: 1rem;
             }
-            .modal-content p, .modal-content li {
+            .modal-body p, .modal-body li {
                 font-size: 0.75rem;
+            }
+            .modal-body {
+                padding: 10px 15px;
             }
         }
     </style>
@@ -431,74 +449,77 @@
         <div class="footer-note">[ ACESSO AUTORIZADO ]</div>
     </div>
 
-    <!-- Modal de ajuda -->
+    <!-- Modal de ajuda com cabeçalho fixo -->
     <div id="helpModal" class="modal">
         <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>📖 MANUAL DO JOGADOR</h2>
-            
-            <h3>🎮 VISÃO GERAL</h3>
-            <p>DATA MINER ENGINE é um jogo incremental onde você <strong>mina dados</strong> e <strong>invade servidores</strong> para ganhar dinheiro (USD). Com o dinheiro, você compra upgrades que aumentam sua produção e contrata hackers automáticos. O jogo possui três abas principais.</p>
-            
-            <h3>📡 DATA FARM (Mineração)</h3>
-            <ul>
-                <li><strong>Upgrade Miner:</strong> Aumenta sua taxa de mineração manual (DATA/s).</li>
-                <li><strong>Auto Miner:</strong> Compra mineradores automáticos que produzem DATA passivamente.</li>
-                <li><strong>Upgrade Auto Miner Speed:</strong> Aumenta a velocidade dos auto miners.</li>
-                <li><strong>Upgrade Connection:</strong> Melhora o sinal de rede, reduzindo quedas de conexão.</li>
-                <li><strong>Firewall:</strong> Reduz a chance de perder a conexão.</li>
-                <li><strong>Auto Reconnect:</strong> Reconecta automaticamente se a conexão cair.</li>
-                <li><strong>Upgrade Check Interval:</strong> Aumenta o tempo entre verificações de desconexão.</li>
-                <li><strong>Clique no console (caixa preta)</strong> para minerar manualmente a qualquer momento.</li>
-            </ul>
-            
-            <h3>🔓 SERVER HACK (Invasão Manual)</h3>
-            <ul>
-                <li><strong>Upgrade Download:</strong> Acelera o tempo de hackeamento.</li>
-                <li><strong>Upgrade Software:</strong> Aumenta a chance de sucesso nas invasões.</li>
-                <li><strong>Servidores:</strong> Clique em qualquer país para tentar invadi-lo.</li>
-                <li>Sucesso: ganha USD e um bônus temporário de sinal.</li>
-                <li>Falha: perde parte do valor (65% do que ganharia).</li>
-            </ul>
-            
-            <h3>🤖 DARK OPS (Hackers Automáticos)</h3>
-            <ul>
-                <li><strong>Buy Hacker Member:</strong> Contrata um hacker automático. Cada um ataca servidores aleatórios que pode invadir (baseado no nível).</li>
-                <li><strong>Upgrade Botnet:</strong> Aumenta a chance de sucesso de TODOS os hackers (+2% por nível).</li>
-                <li><strong>Patentes:</strong> Cada hacker tem 20 patentes (ex: Script Kiddie, Lamer, etc.) e 5 níveis romanos por patente (I a V).</li>
-                <li><strong>Progresso:</strong> Cada hacker precisa de 100 hacks bem sucedidos para subir de nível. Falhas consecutivas (3) ou falha crítica zerada podem rebaixá-lo.</li>
-                <li><strong>Falhas consecutivas:</strong> Se falhar 3 vezes seguidas sem um sucesso, perde um nível.</li>
-                <li><strong>Dificuldade máxima:</strong> Hackers começam atacando apenas servidores fáceis (Brasil, Peru, etc.) e conforme sobem de nível, desbloqueiam servidores mais difíceis (EUA, Suíça, etc.).</li>
-            </ul>
-            
-            <h3>💰 SISTEMA ECONÔMICO</h3>
-            <ul>
-                <li><strong>DATA:</strong> Recurso primário, usado para comprar upgrades de mineração e conexão.</li>
-                <li><strong>USD (dólares):</strong> Ganho invadindo servidores (manual ou automático). Usado para upgrades de software, hackers, botnet, firewall, etc.</li>
-                <li><strong>Prestígio:</strong> Ao acumular $1.000.000, você pode resetar o jogo (mantendo apenas o bônus de prestígio). Cada prestígio dá +5% multiplicativo em toda geração de DATA e USD. Máximo 35 prestígios.</li>
-            </ul>
-            
-            <h3>⚠️ MECÂNICAS IMPORTANTES</h3>
-            <ul>
-                <li><strong>Conexão:</strong> Se o sinal cair muito, você perde a conexão e não pode minerar/hackear até reconectar (ou usar Auto Reconnect).</li>
-                <li><strong>Signal Boost:</strong> Ao hackear com sucesso, você ganha um bônus temporário de sinal (decai 1% por segundo).</li>
-                <li><strong>Perda por falha:</strong> Ao falhar uma invasão (manual ou automática), você perde 65% do valor que ganharia no sucesso.</li>
-                <li><strong>Hold buttons:</strong> Mantenha pressionado qualquer botão de upgrade para comprar repetidamente (suporta toque em celulares).</li>
-                <li><strong>Save/Load:</strong> Use os botões na aba DARK OPS para salvar seu progresso no navegador, exportar ou importar arquivos de save.</li>
-            </ul>
-            
-            <h3>✨ DICAS PARA INICIANTES</h3>
-            <ul>
-                <li>Comece minerando manualmente (clique no console da DATA FARM) para ganhar DATA.</li>
-                <li>Compre alguns níveis de <strong>Upgrade Miner</strong> e depois <strong>Auto Miner</strong>.</li>
-                <li>Invada servidores fáceis (Brasil, Peru) manualmente para ganhar USD rápido.</li>
-                <li>Invista em <strong>Software</strong> (chance de sucesso) e <strong>Download</strong> (velocidade).</li>
-                <li>Contrate <strong>Hacker Members</strong> assim que possível – eles trabalham 24h por dia.</li>
-                <li>Melhore a <strong>Conexão</strong> e a <strong>Firewall</strong> para evitar quedas.</li>
-                <li>Quando tiver $1.000.000, faça o <strong>Prestígio</strong> para ganhar bônus permanentes.</li>
-            </ul>
-            
-            <p style="text-align: center; margin-top: 15px;"><span class="highlight">Boa sorte, operador! Que o código esteja com você.</span></p>
+            <div class="modal-header">
+                <h2>📖 MANUAL DO JOGADOR</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <h3>🎮 VISÃO GERAL</h3>
+                <p>DATA MINER ENGINE é um jogo incremental onde você <strong>mina dados</strong> e <strong>invade servidores</strong> para ganhar dinheiro (USD). Com o dinheiro, você compra upgrades que aumentam sua produção e contrata hackers automáticos. O jogo possui três abas principais.</p>
+                
+                <h3>📡 DATA FARM (Mineração)</h3>
+                <ul>
+                    <li><strong>Upgrade Miner:</strong> Aumenta sua taxa de mineração manual (DATA/s).</li>
+                    <li><strong>Auto Miner:</strong> Compra mineradores automáticos que produzem DATA passivamente.</li>
+                    <li><strong>Upgrade Auto Miner Speed:</strong> Aumenta a velocidade dos auto miners.</li>
+                    <li><strong>Upgrade Connection:</strong> Melhora o sinal de rede, reduzindo quedas de conexão.</li>
+                    <li><strong>Firewall:</strong> Reduz a chance de perder a conexão.</li>
+                    <li><strong>Auto Reconnect:</strong> Reconecta automaticamente se a conexão cair.</li>
+                    <li><strong>Upgrade Check Interval:</strong> Aumenta o tempo entre verificações de desconexão.</li>
+                    <li><strong>Clique no console (caixa preta)</strong> para minerar manualmente a qualquer momento.</li>
+                </ul>
+                
+                <h3>🔓 SERVER HACK (Invasão Manual)</h3>
+                <ul>
+                    <li><strong>Upgrade Download:</strong> Acelera o tempo de hackeamento.</li>
+                    <li><strong>Upgrade Software:</strong> Aumenta a chance de sucesso nas invasões.</li>
+                    <li><strong>Servidores:</strong> Clique em qualquer país para tentar invadi-lo.</li>
+                    <li>Sucesso: ganha USD e um bônus temporário de sinal.</li>
+                    <li>Falha: perde parte do valor (65% do que ganharia).</li>
+                </ul>
+                
+                <h3>🤖 DARK OPS (Hackers Automáticos)</h3>
+                <ul>
+                    <li><strong>Buy Hacker Member:</strong> Contrata um hacker automático. Cada um ataca servidores aleatórios que pode invadir (baseado no nível).</li>
+                    <li><strong>Upgrade Botnet:</strong> Aumenta a chance de sucesso de TODOS os hackers (+2% por nível).</li>
+                    <li><strong>Patentes:</strong> Cada hacker tem 20 patentes (ex: Script Kiddie, Lamer, etc.) e 5 níveis romanos por patente (I a V).</li>
+                    <li><strong>Progresso:</strong> Cada hacker precisa de 100 hacks bem sucedidos para subir de nível. Falhas consecutivas (3) ou falha crítica zerada podem rebaixá-lo.</li>
+                    <li><strong>Falhas consecutivas:</strong> Se falhar 3 vezes seguidas sem um sucesso, perde um nível.</li>
+                    <li><strong>Dificuldade máxima:</strong> Hackers começam atacando apenas servidores fáceis (Brasil, Peru, etc.) e conforme sobem de nível, desbloqueiam servidores mais difíceis (EUA, Suíça, etc.).</li>
+                </ul>
+                
+                <h3>💰 SISTEMA ECONÔMICO</h3>
+                <ul>
+                    <li><strong>DATA:</strong> Recurso primário, usado para comprar upgrades de mineração e conexão.</li>
+                    <li><strong>USD (dólares):</strong> Ganho invadindo servidores (manual ou automático). Usado para upgrades de software, hackers, botnet, firewall, etc.</li>
+                    <li><strong>Prestígio:</strong> Ao acumular $1.000.000, você pode resetar o jogo (mantendo apenas o bônus de prestígio). Cada prestígio dá +5% multiplicativo em toda geração de DATA e USD. Máximo 35 prestígios.</li>
+                </ul>
+                
+                <h3>⚠️ MECÂNICAS IMPORTANTES</h3>
+                <ul>
+                    <li><strong>Conexão:</strong> Se o sinal cair muito, você perde a conexão e não pode minerar/hackear até reconectar (ou usar Auto Reconnect).</li>
+                    <li><strong>Signal Boost:</strong> Ao hackear com sucesso, você ganha um bônus temporário de sinal (decai 1% por segundo).</li>
+                    <li><strong>Perda por falha:</strong> Ao falhar uma invasão (manual ou automática), você perde 65% do valor que ganharia no sucesso.</li>
+                    <li><strong>Hold buttons:</strong> Mantenha pressionado qualquer botão de upgrade para comprar repetidamente (suporta toque em celulares).</li>
+                    <li><strong>Save/Load:</strong> Use os botões na aba DARK OPS para salvar seu progresso no navegador, exportar ou importar arquivos de save.</li>
+                </ul>
+                
+                <h3>✨ DICAS PARA INICIANTES</h3>
+                <ul>
+                    <li>Comece minerando manualmente (clique no console da DATA FARM) para ganhar DATA.</li>
+                    <li>Compre alguns níveis de <strong>Upgrade Miner</strong> e depois <strong>Auto Miner</strong>.</li>
+                    <li>Invada servidores fáceis (Brasil, Peru) manualmente para ganhar USD rápido.</li>
+                    <li>Invista em <strong>Software</strong> (chance de sucesso) e <strong>Download</strong> (velocidade).</li>
+                    <li>Contrate <strong>Hacker Members</strong> assim que possível – eles trabalham 24h por dia.</li>
+                    <li>Melhore a <strong>Conexão</strong> e a <strong>Firewall</strong> para evitar quedas.</li>
+                    <li>Quando tiver $1.000.000, faça o <strong>Prestígio</strong> para ganhar bônus permanentes.</li>
+                </ul>
+                
+                <p style="text-align: center; margin-top: 15px;"><span class="highlight">Boa sorte, operador! Que o código esteja com você.</span></p>
+            </div>
         </div>
     </div>
 
