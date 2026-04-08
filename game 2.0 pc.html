@@ -123,6 +123,7 @@ button:hover{background:#003300;}
 <div class="panel">
 <button id="buyHackerBtn" onclick="buyHacker()">Buy Hacker Member ($<span id="hackerCost">200</span>)</button>
 <button id="botNetBtn" onclick="upgradeBotSpeed()">Upgrade Botnet ($<span id="botCost">150</span>)</button>
+<button id="toggleHackersBtn" onclick="toggleHackersActive()">⏸️ PAUSE HACKERS</button>
 </div>
 <div class="dark-ops-stats">
     <span>👥 Hackers: <span id="hackersVal">0</span></span>
@@ -227,6 +228,7 @@ let signalBonus=0;
 let checkIntervalBonus = 0;
 let intervalCost = 2000;
 let disconnectTimeout = null;
+let hackersActive = true;   // NOVO: controla se os hackers estão ativos
 const firewallNames = ["Basic", "Standard", "Enhanced", "Advanced", "Elite", "Ultimate", "Godlike", "Omnipotent"];
 const FIREWALL_MAX_LEVEL = 99;
 const holdIntervals = {};
@@ -285,7 +287,7 @@ const paises = [
     { name: "USA", difficulty: 80, minReward: 24, maxReward: 37, cooldown: 0, maxCooldown: 8000, isHacked: false }
 ];
 
-// ==================== CLASSE HACKER CORRIGIDA ====================
+// ==================== CLASSE HACKER ====================
 class Hacker {
     constructor(id, memberNumber, name) {
         this.id = id;
@@ -295,7 +297,7 @@ class Hacker {
         this.level = 0;
         this.isHacking = false;
         this.progress = 0;
-        this.currentAction = "🔍 Aguardando alvo...";
+        this.currentAction = hackersActive ? "🔍 Aguardando alvo..." : "⏸️ PAUSADO PELO USUÁRIO";
         this.hackTimer = null;
         this.consecutiveFailures = 0;
     }
@@ -339,13 +341,8 @@ class Hacker {
     addFailure() {
         this.consecutiveFailures++;
         const requiredFailures = this.getRequiredFailuresForDemotion();
-        
-        // NÃO reduz successCount a cada falha – apenas conta falhas consecutivas
-        // O rebaixamento ocorre somente ao atingir o limite
         if (this.consecutiveFailures >= requiredFailures && this.level > 0) {
             this.level--;
-            // Ao rebaixar, o contador de sucessos é ajustado para o máximo do novo nível (para não perder todo o progresso)
-            // Mas vamos zerar para ele precisar refazer os sucessos? A decisão: zerar para 0, pois perdeu um nível.
             this.successCount = 0;
             log("consoleOps", `⚠️ ${this.getDisplayName()} PERDEU UM NÍVEL por ${requiredFailures} falhas consecutivas! Agora é ${this.getRankName()}!`);
             showNotification(`${this.getDisplayName()} foi rebaixado para ${this.getRankName()}!`);
@@ -365,6 +362,11 @@ function chooseRandomTargetForHacker(hacker) {
 }
 
 function startHackerWork(hacker) {
+    if (!hackersActive) {
+        hacker.currentAction = "⏸️ PAUSADO PELO USUÁRIO";
+        updateHackerDisplay();
+        return;
+    }
     if (hacker.isHacking) return;
     if (!connected) {
         hacker.currentAction = "⛔ OFFLINE - Aguardando conexão";
@@ -477,7 +479,41 @@ function initHackers() {
         let newName = getRandomHackerName();
         let hacker = new Hacker(`hm_${i+1}`, i+1, newName);
         hackerList.push(hacker);
-        setTimeout(() => { if (connected) startHackerWork(hacker); }, i * 1000);
+        if (connected && hackersActive) setTimeout(() => startHackerWork(hacker), i * 1000);
+    }
+    updateHackerDisplay();
+}
+
+// ==================== CONTROLE GLOBAL DE ATIVAÇÃO DOS HACKERS ====================
+function toggleHackersActive() {
+    hackersActive = !hackersActive;
+    const btn = document.getElementById("toggleHackersBtn");
+    if (hackersActive) {
+        btn.innerHTML = "⏸️ PAUSE HACKERS";
+        log("consoleOps", "🟢 HACKERS ATIVADOS - Retomando operações");
+        showNotification("Hackers ativados");
+        // Retomar todos os hackers que estão pausados
+        for (let hacker of hackerList) {
+            if (hacker.hackTimer) clearInterval(hacker.hackTimer);
+            hacker.isHacking = false;
+            if (connected) startHackerWork(hacker);
+            else hacker.currentAction = "⛔ OFFLINE - Aguardando conexão";
+        }
+    } else {
+        btn.innerHTML = "▶️ ACTIVATE HACKERS";
+        log("consoleOps", "🔴 HACKERS DESATIVADOS - Operações pausadas");
+        showNotification("Hackers desativados");
+        // Parar todos os hackers
+        for (let hacker of hackerList) {
+            if (hacker.hackTimer) {
+                clearInterval(hacker.hackTimer);
+                hacker.hackTimer = null;
+            }
+            hacker.isHacking = false;
+            hacker.progress = 0;
+            hacker.currentAction = "⏸️ PAUSADO PELO USUÁRIO";
+        }
+        updateHackerDisplay();
     }
     updateHackerDisplay();
 }
@@ -664,7 +700,8 @@ function buyHacker() {
         let newName = getRandomHackerName();
         let newHacker = new Hacker(`hm_${hackers}`, hackers, newName);
         hackerList.push(newHacker);
-        if (connected) startHackerWork(newHacker);
+        if (connected && hackersActive) startHackerWork(newHacker);
+        else if (!hackersActive) newHacker.currentAction = "⏸️ PAUSADO PELO USUÁRIO";
         updateHackerDisplay();
         update();
         log("consoleOps", `🤖 NOVO HACKER CONTRATADO: ${newName}! Total: ${hackers}`);
@@ -693,7 +730,12 @@ function connectServer() {
     updateSignal();
     update();
     scheduleDisconnectCheck();
-    for (let hacker of hackerList) startHackerWork(hacker);
+    if (hackersActive) {
+        for (let hacker of hackerList) startHackerWork(hacker);
+    } else {
+        for (let hacker of hackerList) hacker.currentAction = "⏸️ PAUSADO PELO USUÁRIO";
+        updateHackerDisplay();
+    }
 }
 function getDisconnectInterval(signalTotal) {
     let base = 10 + checkIntervalBonus + (firewallLevel * 0.5) + (signalTotal * 0.2);
@@ -724,7 +766,9 @@ function checkDisconnect() {
             updateSignal(); 
             updateButtons(); 
             scheduleDisconnectCheck(); 
-            for (let hacker of hackerList) startHackerWork(hacker); 
+            if (hackersActive) for (let hacker of hackerList) startHackerWork(hacker);
+            else for (let hacker of hackerList) hacker.currentAction = "⏸️ PAUSADO PELO USUÁRIO";
+            updateHackerDisplay();
         }, 2000);
     } else scheduleDisconnectCheck();
 }
@@ -850,7 +894,7 @@ function getGameState() {
     return { data, usd, speed, minerLevel, minerCost, autoMiner, autoCost, autoMinerPower, autoMinerSpeed, autoSpeedCost,
         connectionLevel, connCost, firewallLevel, firewallCost, checkIntervalBonus, intervalCost, autoReconnect, hackers,
         hackerCost, botSpeed, botCost, download, software, downCost, softCost, prestigeBonus, prestigeCount, signalBonus,
-        hackersData, usedNames };
+        hackersData, usedNames, hackersActive };
 }
 function loadGameState(state) {
     data = state.data; usd = state.usd; speed = state.speed; minerLevel = state.minerLevel; minerCost = state.minerCost;
@@ -863,6 +907,7 @@ function loadGameState(state) {
     software = state.software; downCost = state.downCost; softCost = state.softCost;
     prestigeBonus = state.prestigeBonus || 1.0; prestigeCount = state.prestigeCount || 0; signalBonus = state.signalBonus || 0;
     usedNames = state.usedNames || [];
+    hackersActive = (state.hackersActive !== undefined) ? state.hackersActive : true;
     if (state.hackersData && state.hackersData.length > 0) {
         hackerList = [];
         for (let hData of state.hackersData) {
@@ -886,8 +931,15 @@ function loadGameState(state) {
         log("consoleOps", "🔄 Save antigo detectado. Nomes gerados aleatoriamente para seus hackers.");
     }
     update(); updateSignal();
-    if (connected) for (let hacker of hackerList) startHackerWork(hacker);
+    if (connected && hackersActive) {
+        for (let hacker of hackerList) startHackerWork(hacker);
+    } else if (connected && !hackersActive) {
+        for (let hacker of hackerList) hacker.currentAction = "⏸️ PAUSADO PELO USUÁRIO";
+    }
     updateHackerDisplay();
+    // Atualiza texto do botão de toggle
+    const btn = document.getElementById("toggleHackersBtn");
+    if (btn) btn.innerHTML = hackersActive ? "⏸️ PAUSE HACKERS" : "▶️ ACTIVATE HACKERS";
 }
 function saveGame(silent = false) {
     localStorage.setItem("dataMinerSave", JSON.stringify(getGameState()));
