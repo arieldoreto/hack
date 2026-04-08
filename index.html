@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>DATA MINER ENGINE | Cyber Hack </title>
+    <title>DATA MINER ENGINE | Cyber Hack 2.0</title>
     <style>
         * {
             margin: 0;
@@ -463,8 +463,8 @@
                 <h3>📡 DATA FARM (Mineração)</h3>
                 <ul>
                     <li><strong>Upgrade Miner:</strong> Aumenta sua taxa de mineração manual (DATA/s).</li>
-                    <li><strong>Auto Miner:</strong> Compra mineradores automáticos que produzem DATA passivamente.</li>
-                    <li><strong>Upgrade Auto Miner Speed:</strong> Aumenta a velocidade dos auto miners.</li>
+                    <li><strong>Auto Miner:</strong> Compra mineradores automáticos (custo inicial 1 MB, dobra a cada compra). A produção aumenta linearmente com a quantidade de Auto Miners.</li>
+                    <li><strong>Upgrade Auto Miner Speed:</strong> Aumenta a velocidade de todos os auto miners (+0.1x por nível, custo em USD).</li>
                     <li><strong>Upgrade Connection:</strong> Melhora o sinal de rede, reduzindo quedas de conexão.</li>
                     <li><strong>Firewall:</strong> Reduz a chance de perder a conexão.</li>
                     <li><strong>Auto Reconnect:</strong> Reconecta automaticamente se a conexão cair.</li>
@@ -476,19 +476,21 @@
                 <ul>
                     <li><strong>Upgrade Download:</strong> Acelera o tempo de hackeamento.</li>
                     <li><strong>Upgrade Software:</strong> Aumenta a chance de sucesso nas invasões.</li>
-                    <li><strong>Servidores:</strong> Clique em qualquer país para tentar invadi-lo.</li>
+                    <li><strong>Servidores:</strong> Mais de 40 países, divididos em 3 níveis de dificuldade (3º, 2º e 1º mundo). A recompensa em USD varia aleatoriamente dentro de faixas (10-18, 18-24, 24-37).</li>
                     <li>Sucesso: ganha USD e um bônus temporário de sinal.</li>
-                    <li>Falha: perde parte do valor (65% do que ganharia).</li>
+                    <li>Falha: perde 65% do valor base que ganharia.</li>
                 </ul>
                 
                 <h3>🤖 DARK OPS (Hackers Automáticos)</h3>
                 <ul>
-                    <li><strong>Buy Hacker Member:</strong> Contrata um hacker automático. Cada um ataca servidores aleatórios que pode invadir (baseado no nível).</li>
-                    <li><strong>Upgrade Botnet:</strong> Aumenta a chance de sucesso de TODOS os hackers (+2% por nível).</li>
-                    <li><strong>Patentes:</strong> Cada hacker tem 20 patentes (ex: Script Kiddie, Lamer, etc.) e 5 níveis romanos por patente (I a V).</li>
-                    <li><strong>Progresso:</strong> Cada hacker precisa de 100 hacks bem sucedidos para subir de nível. Falhas consecutivas (3) ou falha crítica zerada podem rebaixá-lo.</li>
-                    <li><strong>Falhas consecutivas:</strong> Se falhar 3 vezes seguidas sem um sucesso, perde um nível.</li>
-                    <li><strong>Dificuldade máxima:</strong> Hackers começam atacando apenas servidores fáceis (Brasil, Peru, etc.) e conforme sobem de nível, desbloqueiam servidores mais difíceis (EUA, Suíça, etc.).</li>
+                    <li><strong>Buy Hacker Member:</strong> Contrata um hacker com nome único (nomes não se repetem enquanto houver opções disponíveis). Cada hacker ataca servidores aleatórios que pode invadir baseado no seu nível.</li>
+                    <li><strong>Upgrade Botnet:</strong> Aumenta a chance de sucesso de TODOS os hackers (+2% por nível, máximo 40%).</li>
+                    <li><strong>Patentes e Níveis:</strong> Cada hacker tem 20 patentes (ex: Script Kiddie, Lamer, ... Binary God) e 5 níveis romanos por patente (I a V). São 100 níveis no total.</li>
+                    <li><strong>Progresso normal:</strong> Cada nível (do 0 ao 99) requer <strong>100 sucessos</strong>. Quando atinge 100 sucessos, sobe de nível e o contador é zerado.</li>
+                    <li><strong>Nível máximo (Master Control):</strong> Para sair do nível 99 e chegar ao nível 100 (Master Control), o hacker precisa acumular <strong>5.000 sucessos</strong>. Não há nível acima.</li>
+                    <li><strong>Falhas consecutivas (sem perda de sucessos):</strong> Cada falha <strong>não reduz</strong> o contador de sucessos, apenas aumenta um contador de falhas consecutivas. Se o hacker acumular falhas consecutivas sem nenhum sucesso, ele perde um nível (rebaixamento) ao atingir o limite, que varia conforme o tipo de país que ele pode atacar: <strong>20 falhas</strong> (3º mundo), <strong>14 falhas</strong> (2º mundo) ou <strong>7 falhas</strong> (1º mundo). Após rebaixar, o contador de falhas é zerado e os sucessos voltam a 0.</li>
+                    <li><strong>Sucesso:</strong> Zera o contador de falhas consecutivas e aumenta o contador de sucessos em 1.</li>
+                    <li><strong>Dificuldade máxima:</strong> Hackers começam atacando apenas servidores de 3º mundo (dif ≤ 50). Conforme sobem de nível, desbloqueiam 2º mundo (dif ≤ 68) e 1º mundo (dif > 68).</li>
                 </ul>
                 
                 <h3>💰 SISTEMA ECONÔMICO</h3>
@@ -502,18 +504,19 @@
                 <ul>
                     <li><strong>Conexão:</strong> Se o sinal cair muito, você perde a conexão e não pode minerar/hackear até reconectar (ou usar Auto Reconnect).</li>
                     <li><strong>Signal Boost:</strong> Ao hackear com sucesso, você ganha um bônus temporário de sinal (decai 1% por segundo).</li>
-                    <li><strong>Perda por falha:</strong> Ao falhar uma invasão (manual ou automática), você perde 65% do valor que ganharia no sucesso.</li>
+                    <li><strong>Perda por falha:</strong> Ao falhar uma invasão (manual ou automática), você perde 65% do valor base que ganharia.</li>
                     <li><strong>Hold buttons:</strong> Mantenha pressionado qualquer botão de upgrade para comprar repetidamente (suporta toque em celulares).</li>
                     <li><strong>Save/Load:</strong> Use os botões na aba DARK OPS para salvar seu progresso no navegador, exportar ou importar arquivos de save.</li>
+                    <li><strong>Nomes dos hackers:</strong> São únicos e aleatórios; salvos junto com o progresso.</li>
                 </ul>
                 
                 <h3>✨ DICAS PARA INICIANTES</h3>
                 <ul>
                     <li>Comece minerando manualmente (clique no console da DATA FARM) para ganhar DATA.</li>
-                    <li>Compre alguns níveis de <strong>Upgrade Miner</strong> e depois <strong>Auto Miner</strong>.</li>
-                    <li>Invada servidores fáceis (Brasil, Peru) manualmente para ganhar USD rápido.</li>
+                    <li>Compre alguns níveis de <strong>Upgrade Miner</strong> e depois <strong>Auto Miner</strong> (custo em DATA).</li>
+                    <li>Invada servidores fáceis (3º mundo) manualmente para ganhar USD rápido.</li>
                     <li>Invista em <strong>Software</strong> (chance de sucesso) e <strong>Download</strong> (velocidade).</li>
-                    <li>Contrate <strong>Hacker Members</strong> assim que possível – eles trabalham 24h por dia.</li>
+                    <li>Contrate <strong>Hacker Members</strong> assim que possível – eles trabalham 24h por dia e evoluem com o tempo.</li>
                     <li>Melhore a <strong>Conexão</strong> e a <strong>Firewall</strong> para evitar quedas.</li>
                     <li>Quando tiver $1.000.000, faça o <strong>Prestígio</strong> para ganhar bônus permanentes.</li>
                 </ul>
