@@ -15,6 +15,8 @@ body{background:black;color:#00ff00;font-family:monospace;margin:0;text-align:ce
 .header{padding:6px;border-bottom:1px solid #003300;}
 .panel{padding:8px;border-bottom:1px solid #003300;}
 .console{height:30vh;overflow:auto;text-align:left;padding:10px;border:2px solid #00ff00;margin:10px 0;cursor:pointer;background:black;}
+
+/* Container da lista de servidores - mesma dimensão e estilo da caixa de log */
 .servers-container{
     height:30vh;
     overflow:auto;
@@ -28,6 +30,7 @@ body{background:black;color:#00ff00;font-family:monospace;margin:0;text-align:ce
     gap:8px;
     align-content:flex-start;
 }
+
 .serverBtn{
     width:calc(25% - 8px);
     background:black;
@@ -41,6 +44,8 @@ body{background:black;color:#00ff00;font-family:monospace;margin:0;text-align:ce
     text-align:center;
 }
 .serverBtn:hover{background:#002200;}
+
+/* Demais botões */
 button{
     background:black;
     color:#00ff00;
@@ -186,7 +191,8 @@ const hackerPatentes = [
 ];
 const romanos = ["I", "II", "III", "IV", "V"];
 function getFullRankName(level) {
-    if (isNaN(level) || level === undefined) level = 0;
+    if (level === undefined || isNaN(level)) level = 0;
+    if (level >= 100) return "🏆 Master Control";
     const patenteIndex = Math.floor(level / 5);
     const romanoIndex = level % 5;
     if (patenteIndex >= hackerPatentes.length) return hackerPatentes[hackerPatentes.length - 1] + " V";
@@ -225,7 +231,7 @@ const firewallNames = ["Basic", "Standard", "Enhanced", "Advanced", "Elite", "Ul
 const FIREWALL_MAX_LEVEL = 99;
 const holdIntervals = {};
 
-// ==================== LISTA DE PAÍSES ====================
+// ==================== LISTA DE PAÍSES (48 servidores) ====================
 const paises = [
     { name: "BRAZIL", difficulty: 40, minReward: 10, maxReward: 18, cooldown: 0, maxCooldown: 4000, isHacked: false },
     { name: "ARGENTINA", difficulty: 45, minReward: 10, maxReward: 18, cooldown: 0, maxCooldown: 4500, isHacked: false },
@@ -279,7 +285,7 @@ const paises = [
     { name: "USA", difficulty: 80, minReward: 24, maxReward: 37, cooldown: 0, maxCooldown: 8000, isHacked: false }
 ];
 
-// ==================== CLASSE HACKER ====================
+// ==================== CLASSE HACKER CORRIGIDA ====================
 class Hacker {
     constructor(id, memberNumber, name) {
         this.id = id;
@@ -300,36 +306,48 @@ class Hacker {
         let base = 50 + Math.floor((this.level || 0) * 0.6);
         return Math.min(80, Math.max(30, base));
     }
-    getRequiredForNextLevel() { return 100; }
+    getRequiredForNextLevel() {
+        if (this.level === 99) return 5000;
+        return 100;
+    }
     getSuccessChance() {
         let chance = 20 + this.getRankBonus() + getSuccessBonus();
         return Math.min(85, Math.max(10, chance));
     }
+    getRequiredFailuresForDemotion() {
+        const maxDiff = this.getMaxDifficulty();
+        if (maxDiff <= 50) return 20;
+        if (maxDiff <= 68) return 14;
+        return 7;
+    }
     addSuccess() {
         this.consecutiveFailures = 0;
         this.successCount++;
-        if (this.successCount >= this.getRequiredForNextLevel() && this.level < 99) {
-            this.successCount -= this.getRequiredForNextLevel();
+        const required = this.getRequiredForNextLevel();
+        if (this.successCount >= required && this.level < 100) {
+            this.successCount -= required;
             this.level++;
-            log("consoleOps", `🏆 ${this.getDisplayName()} PROMOVIDO para ${this.getRankName()} (+2% sucesso, agora pode atacar ${getWorldLevel(this.getMaxDifficulty())})!`);
-            showNotification(`${this.getDisplayName()} → ${this.getRankName()}!`);
+            if (this.level === 100) {
+                log("consoleOps", `🏆 ${this.getDisplayName()} ALCANÇOU O NÍVEL MÁXIMO: MASTER CONTROL! 🏆`);
+                showNotification(`${this.getDisplayName()} → MASTER CONTROL!`);
+            } else {
+                log("consoleOps", `🏆 ${this.getDisplayName()} PROMOVIDO para ${this.getRankName()} (+2% sucesso, agora pode atacar ${getWorldLevel(this.getMaxDifficulty())})!`);
+                showNotification(`${this.getDisplayName()} → ${this.getRankName()}!`);
+            }
         }
     }
     addFailure() {
         this.consecutiveFailures++;
-        if (this.successCount > 0) {
-            this.successCount--;
-        } else if (this.level > 0) {
+        const requiredFailures = this.getRequiredFailuresForDemotion();
+        
+        // NÃO reduz successCount a cada falha – apenas conta falhas consecutivas
+        // O rebaixamento ocorre somente ao atingir o limite
+        if (this.consecutiveFailures >= requiredFailures && this.level > 0) {
             this.level--;
-            this.successCount = this.getRequiredForNextLevel() - 1;
-            log("consoleOps", `⚠️ ${this.getDisplayName()} PERDEU UM NÍVEL por falha crítica! Agora é ${this.getRankName()}!`);
-            this.consecutiveFailures = 0;
-            return;
-        }
-        if (this.consecutiveFailures >= 3 && this.level > 0) {
-            this.level--;
-            this.successCount = this.getRequiredForNextLevel() - 1;
-            log("consoleOps", `⚠️ ${this.getDisplayName()} PERDEU UM NÍVEL por 3 falhas consecutivas! Agora é ${this.getRankName()}!`);
+            // Ao rebaixar, o contador de sucessos é ajustado para o máximo do novo nível (para não perder todo o progresso)
+            // Mas vamos zerar para ele precisar refazer os sucessos? A decisão: zerar para 0, pois perdeu um nível.
+            this.successCount = 0;
+            log("consoleOps", `⚠️ ${this.getDisplayName()} PERDEU UM NÍVEL por ${requiredFailures} falhas consecutivas! Agora é ${this.getRankName()}!`);
             showNotification(`${this.getDisplayName()} foi rebaixado para ${this.getRankName()}!`);
             this.consecutiveFailures = 0;
         }
@@ -399,7 +417,7 @@ function completeHack(hacker, target) {
     } else {
         usd = Math.max(0, usd - loss);
         hacker.addFailure();
-        log("consoleOps", `❌ ${hacker.getDisplayName()} (${hacker.getRankName()}) FALHOU ao invadir ${target.name}! Perdeu $${formatUSD(loss)} (Chance: ${successChance.toFixed(1)}%) - Falhas consecutivas: ${hacker.consecutiveFailures}/3`);
+        log("consoleOps", `❌ ${hacker.getDisplayName()} (${hacker.getRankName()}) FALHOU ao invadir ${target.name}! Perdeu $${formatUSD(loss)} (Chance: ${successChance.toFixed(1)}%) - Falhas consecutivas: ${hacker.consecutiveFailures}/${hacker.getRequiredFailuresForDemotion()}`);
     }
     target.cooldown = target.maxCooldown;
     target.isHacked = true;
@@ -427,18 +445,19 @@ function updateHackerDisplay() {
     for (let hacker of hackerList) {
         const required = hacker.getRequiredForNextLevel();
         const progressPercent = (hacker.successCount / required) * 100;
+        const maxLevelDisplay = hacker.level >= 100 ? 101 : 100;
         const card = document.createElement('div');
         card.className = 'hacker-card';
         card.innerHTML = `
             <div class="hacker-name">${hacker.isHacking ? '🟢' : '🟡'} ${hacker.getDisplayName()}</div>
-            <div class="hacker-rank">🏆 ${hacker.getRankName()} (Nível ${hacker.level + 1}/100)</div>
-            <div class="hacker-progress">✅ Sucessos: ${hacker.successCount}/${required}</div>
+            <div class="hacker-rank">🏆 ${hacker.getRankName()} (Nível ${hacker.level + 1}/${maxLevelDisplay})</div>
+            <div class="hacker-progress">✅ Sucessos para próximo nível: ${hacker.successCount}/${required}</div>
             <div class="progress-bar"><div class="progress-fill" style="width: ${progressPercent}%;"></div></div>
             <div class="hacker-action">${hacker.currentAction}</div>
             <div style="font-size:11px; margin-top:5px;">
                 🎯 Chance: ${hacker.getSuccessChance()}% (${hacker.level * 2}% Rank + ${getSuccessBonus()}% Botnet)<br>
                 🎚️ Pode atacar países de ${getWorldLevel(hacker.getMaxDifficulty())}<br>
-                ⚠️ Falhas consecutivas: ${hacker.consecutiveFailures}/3
+                ⚠️ Falhas consecutivas: ${hacker.consecutiveFailures}/${hacker.getRequiredFailuresForDemotion()}
             </div>
         `;
         if (hacker.isHacking && hacker.progress > 0) {
@@ -844,13 +863,9 @@ function loadGameState(state) {
     software = state.software; downCost = state.downCost; softCost = state.softCost;
     prestigeBonus = state.prestigeBonus || 1.0; prestigeCount = state.prestigeCount || 0; signalBonus = state.signalBonus || 0;
     usedNames = state.usedNames || [];
-    
-    // CORREÇÃO: se o save não tem hackersData (save antigo) OU tem mas não tem nomes, geramos nomes
     if (state.hackersData && state.hackersData.length > 0) {
-        // Save novo com dados de hackers
         hackerList = [];
         for (let hData of state.hackersData) {
-            // Se o nome não existe ou é "undefined", gera um novo
             let hackerName = hData.name;
             if (!hackerName || hackerName === "undefined" || hackerName === "Hacker Desconhecido") {
                 hackerName = getRandomHackerName();
@@ -862,12 +877,10 @@ function loadGameState(state) {
             hackerList.push(hacker);
         }
     } else {
-        // Save antigo (sem hackersData) - cria hackers com base no valor 'hackers'
         hackerList = [];
         for (let i = 0; i < hackers; i++) {
             let newName = getRandomHackerName();
             let hacker = new Hacker(`hm_${i+1}`, i+1, newName);
-            // Mantém o progresso? Não temos dados, então começa do zero. Mas pelo menos o número de hackers é respeitado.
             hackerList.push(hacker);
         }
         log("consoleOps", "🔄 Save antigo detectado. Nomes gerados aleatoriamente para seus hackers.");
